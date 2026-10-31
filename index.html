@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#101116">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="description" content="Vistraker - Track Your Time. See Your Growth. A private, local-first study, skills and progress tracker.">
+<title>Vistraker - Track Your Time. See Your Growth.</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%238B5CF6'/%3E%3Cpath d='M8 21.5l5-5.5 3.5 3L24 10.5' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='10.5' r='2.2' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+/* Vistraker — one consolidated stylesheet. Calm, solid, dark charcoal; violet only for actions, selection and progress.
+   Radius system: 10px panels & dialogs, 8px controls, 6px chips. Spacing scale: 4 8 12 16 24 32 48.
+   --mut is for placeholders and disabled text only; readable small text uses --tx2. */
+:root{color-scheme:dark;
+ --bg:#101116;--bg2:#14151C;--card:#191B23;--elev:#20232D;--hov:#282B36;
+ --tx:#F1F0F5;--tx2:#A3A4B2;--mut:#777987;--bd:#30323D;
+ --v:#A78BFA;--v2:#C4B5FD;--v3:#C4B5FD;--ok:#55C99A;--warn:#E8B96A;--err:#EF7185;
+ --r:10px;--rc:8px;--rs:6px;--ease:cubic-bezier(.2,.7,.2,1);--navh:64px;--side:244px;
+ --serif:"Iowan Old Style","Palatino Linotype",Palatino,Charter,"Bitstream Charter",Georgia,serif;
+ --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%;background:var(--bg);color-scheme:dark}
+body{font:16px/1.55 var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent;overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--v2)}
+h1{font:500 clamp(1.75rem,5.4vw,2.3rem)/1.15 var(--serif);letter-spacing:-.015em}
+h2{font-size:1.0625rem;font-weight:600;line-height:1.3}
+h3{font-size:.9688rem;font-weight:600}
+small,.sm-t{font-size:.8125rem;color:var(--tx2)}
+.sm-t a,small a{color:var(--v2)}
+.mut{color:var(--mut)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--v2);outline-offset:2px;border-radius:var(--rc)}
+svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.num,.count{font-variant-numeric:tabular-nums}
+
+/* ---- layout ---- */
+.shell{display:grid;grid-template-columns:minmax(0,1fr);min-height:100dvh}
+.side{display:none}
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:var(--bg);border-bottom:1px solid var(--bd)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:650;font-size:1.1rem;letter-spacing:-.01em;text-decoration:none;color:var(--tx)}
+.logo svg{width:28px;height:28px}
+.sm-t.sm-t-top,.top .sm-t{color:var(--tx2)}
+main{padding:24px 16px calc(var(--navh) + 32px + env(safe-area-inset-bottom));max-width:1000px;width:100%;margin:0 auto}
+#view{min-height:60vh}
+main,#view{background:var(--bg)}
+@keyframes vfade{from{opacity:0}to{opacity:1}}
+.static *{animation:none!important;transition:none!important}
+.static .fadeit{animation:vfade .18s ease-out both!important}
+
+/* bottom navigation (phones) */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:30;height:calc(var(--navh) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:grid;grid-template-columns:repeat(5,1fr);background:var(--bg2);border-top:1px solid var(--bd)}
+.bnav a,.bnav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--tx2);text-decoration:none;font-size:.75rem;font-weight:500;background:none;border:0;min-height:48px;transition:color .15s}
+.bnav .on{color:var(--tx)}
+.bnav .on svg{color:var(--v)}
+.bnav .ind{position:absolute;top:-1px;left:0;width:20%;height:2px;display:flex;justify-content:center;transition:transform .25s var(--ease);pointer-events:none}
+.bnav .ind i{display:block;width:32px;height:2px;background:var(--v)}
+
+/* sidebar (desktop) */
+@media(min-width:900px){
+ .shell{grid-template-columns:var(--side) minmax(0,1fr)}
+ .side{display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100dvh;padding:22px 14px 16px;background:var(--bg2);border-right:1px solid var(--bd);overflow-y:auto}
+ .top,.bnav{display:none}
+ main{padding:44px 48px 32px}
+}
+.side .logo{padding:0 10px 18px;margin-bottom:6px;border-bottom:1px solid var(--bd)}
+.side nav{display:flex;flex-direction:column;gap:2px}
+.nav-g{font-size:.78rem;color:var(--tx2);padding:16px 12px 6px;font-weight:500}
+.side nav a{position:relative;display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--rc);color:var(--tx2);text-decoration:none;font-weight:500;font-size:.9375rem;transition:background .15s,color .15s}
+.side nav a.on{background:var(--elev);color:var(--tx)}
+.side nav a.on svg{color:var(--v)}
+.side nav a::before{content:"";position:absolute;left:-14px;top:9px;bottom:9px;width:3px;border-radius:0 3px 3px 0;background:var(--v);transform:scaleY(0);transition:transform .2s var(--ease)}
+.side nav a.on::before{transform:scaleY(1)}
+@media(hover:hover){.side nav a:hover:not(.on){background:var(--hov);color:var(--tx)}}
+.side .tag{margin-top:auto;font-size:.8125rem;color:var(--tx2);padding:14px 10px 0}
+.side-credit{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 10px 0;margin-top:12px;border-top:1px solid var(--bd);font-size:.8125rem;color:var(--tx2)}
+.side-credit a{display:inline-flex;align-items:center;gap:6px;color:var(--tx);text-decoration:none;min-height:32px;padding:0 8px;border-radius:var(--rs)}
+.side-credit a svg{width:16px;height:16px}
+@media(hover:hover){.side-credit a:hover{background:var(--hov)}}
+
+/* ---- page structure ---- */
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:28px}
+.pagehead p{color:var(--tx2);font-size:.9375rem;margin-top:6px;max-width:58ch}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+.grid{display:grid;gap:16px;margin-bottom:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.sec{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.sec h2{font-size:1rem}
+.cols{display:grid;gap:40px;grid-template-columns:minmax(0,1fr);margin-top:36px}
+@media(min-width:900px){.cols{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}}
+.block{margin-top:36px}
+.cols .block{margin-top:0}
+
+/* panels: a surface only where it helps organise something (forms, hero, dialogs) */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:20px;position:relative;min-width:0}
+.card>h2,.card>.chead{margin-bottom:14px}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card.glow{border-color:var(--v)}
+@media(hover:hover){.card.lift:hover{border-color:var(--hov)}}
+#view>section.card,#view>.card{margin-bottom:16px}
+.stat{padding:16px 0;border-top:1px solid var(--bd);min-width:0}
+.stat .lab{display:flex;align-items:center;gap:8px;color:var(--tx2);font-size:.8125rem}
+.stat .lab svg{width:16px;height:16px}
+.stat .val{font-size:1.65rem;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:4px 0 2px;line-height:1.2}
+.stat small{display:block}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--rs);font-size:.75rem;font-weight:500;background:var(--elev);color:var(--tx2);border:1px solid var(--bd)}
+.chip.warn{color:var(--warn);border-color:rgba(232,185,106,.4);background:rgba(232,185,106,.08)}
+.chip.ok{color:var(--ok);border-color:rgba(85,201,154,.4);background:rgba(85,201,154,.08)}
+.chip.err{color:var(--err);border-color:rgba(239,113,133,.4);background:rgba(239,113,133,.08)}
+
+/* ---- buttons & fields ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:var(--rc);border:1px solid var(--bd);background:var(--elev);color:var(--tx);font-weight:550;text-decoration:none;transition:background .15s,border-color .15s,transform .1s;touch-action:manipulation;white-space:nowrap}
+.btn:active:not(:disabled){transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{min-height:36px;padding:0 12px;font-size:.875rem}
+.btn.lg{min-height:52px;padding:0 24px;font-size:1rem}
+.btn.pri{background:var(--v);border-color:var(--v);color:#101116;font-weight:650}
+.btn.danger{color:var(--err);border-color:rgba(239,113,133,.4);background:transparent}
+.btn.ok{color:var(--ok);border-color:rgba(85,201,154,.4);background:transparent}
+.btn.ghost{background:transparent}
+@media(hover:hover){.btn:hover:not(:disabled){background:var(--hov);border-color:var(--hov)}.btn.pri:hover:not(:disabled){background:var(--v2);border-color:var(--v2)}.btn.danger:hover:not(:disabled){background:rgba(239,113,133,.12);border-color:var(--err)}}
+.icon-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--rc);border:1px solid var(--bd);background:var(--elev);transition:background .15s,transform .1s;touch-action:manipulation;flex:none}
+.icon-btn.sm{width:36px;height:36px;background:transparent;border-color:transparent;color:var(--tx2)}
+.icon-btn:active:not(:disabled){transform:scale(.94)}
+.icon-btn:disabled{opacity:.4;cursor:not-allowed}
+@media(hover:hover){.icon-btn:hover:not(:disabled){background:var(--hov);color:var(--tx)}}
+@media(pointer:coarse){.icon-btn.sm{width:44px;height:44px}.seg button,.btn.sm{min-height:44px}}
+.gh{background:var(--elev)}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:.875rem;color:var(--tx2);font-weight:500;min-width:0}
+input,select,textarea{width:100%;min-height:44px;padding:9px 12px;border-radius:var(--rc);border:1px solid var(--bd);background:var(--bg);color:var(--tx);font-size:16px;transition:border-color .15s,box-shadow .15s}
+input::placeholder,textarea::placeholder{color:var(--mut)}
+textarea{min-height:128px;resize:none;overflow:hidden auto;line-height:1.5}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--v);box-shadow:0 0 0 3px rgba(167,139,250,.22)}
+input[type=checkbox],input[type=radio]{width:20px;height:20px;min-height:0;accent-color:var(--v);flex:none}
+input[type=date],input[type=time]{color-scheme:dark}
+.form{display:grid;gap:16px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px}
+.chk{width:28px;height:28px;border-radius:var(--rs);border:1.5px solid var(--tx2);background:transparent;display:inline-flex;align-items:center;justify-content:center;flex:none;transition:background .15s,border-color .15s;color:#101116;position:relative}
+.chk::after{content:"";position:absolute;inset:-9px}
+.chk svg{width:16px;height:16px;stroke-width:3;opacity:0;transition:opacity .12s}
+.chk.on{background:var(--v);border-color:var(--v)}
+.chk.on svg{opacity:1}
+.chk:disabled{opacity:.4;cursor:not-allowed}
+.seg{background:inherit;display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{white-space:nowrap;min-height:38px;padding:0 14px;border-radius:var(--rc);border:1px solid var(--bd);background:transparent;color:var(--tx2);font-size:.875rem;font-weight:500;transition:background .15s,color .15s,border-color .15s;touch-action:manipulation}
+.seg button.on{background:var(--elev);border-color:var(--v);color:var(--tx)}
+@media(hover:hover){.seg button:not(.on):hover{background:var(--hov);color:var(--tx)}}
+
+/* ---- lists: hairline rows, no boxes ---- */
+ul.list{list-style:none;padding:0;display:grid;gap:0}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bd);min-width:0}
+ul.list>.item:last-child{border-bottom:0}
+.item .grow b{display:block;overflow-wrap:anywhere;font-weight:550}
+.item small{display:block;overflow-wrap:anywhere}
+.item .note{font-size:.875rem;color:var(--tx2);margin-top:4px;white-space:pre-wrap;overflow-wrap:anywhere}
+.item.done b.t{text-decoration:line-through;color:var(--tx2)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--v));flex:none}
+.rows{border-top:1px solid var(--bd)}
+.rowitem{position:relative;display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid var(--bd);min-width:0}
+.rowitem .dot{margin-top:7px}
+.rowitem h3{font-size:1.0625rem}
+.rowitem .rv{font-size:1.25rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rowitem .meta{display:block;color:var(--tx2);font-size:.8125rem;margin-top:2px}
+.rowitem .prg{margin-top:8px;max-width:360px}
+@media(hover:hover){.rowitem:hover h3{color:var(--v2)}}
+.stretch{all:unset;cursor:pointer;display:block;min-width:0}
+.stretch::after{content:"";position:absolute;inset:0}
+.stretch:focus-visible::after{outline:2px solid var(--v2);outline-offset:-2px;border-radius:var(--rc)}
+.empty{text-align:left;padding:24px;color:var(--tx2)}
+.empty h2{color:var(--tx);margin-bottom:6px;font-size:1.25rem;font-family:var(--serif);font-weight:500}
+.empty p{max-width:56ch}
+.empty .row{margin-top:16px}
+
+/* ---- progress & charts ---- */
+.bar{height:6px;border-radius:99px;background:var(--elev);overflow:hidden;margin-top:8px}
+.bar>i{display:block;height:100%;border-radius:inherit;background:var(--v);transform-origin:left;transform:scaleX(0);transition:transform .5s var(--ease)}
+.bar.okc>i{background:var(--ok)}
+.in .bar>i{transform:scaleX(var(--p,0))}
+.cbars{display:flex;align-items:flex-end;gap:4px;height:150px;margin-top:8px}
+.cb{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;background:none;border:0;padding:0;position:relative;touch-action:manipulation}
+.cb i{display:block;width:100%;height:calc(var(--h,0)*1%);border-radius:4px 4px 1px 1px;background:var(--v);transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease)}
+.cb.z i{background:var(--elev);height:3px}
+.cb.sel i{background:var(--v2)}
+.in .cb i{transform:scaleY(1)}
+@media(hover:hover){.cb:hover i{background:var(--v2)}}
+.clabels{display:flex;gap:4px;margin-top:6px}
+.clabels span{flex:1;min-width:0;text-align:center;font-size:.6875rem;color:var(--tx2);white-space:nowrap}
+.readout{min-height:1.4em;font-size:.875rem;color:var(--tx2);margin-top:8px}
+.hrow{display:grid;grid-template-columns:minmax(70px,28%) 1fr auto;gap:10px;align-items:center;margin:10px 0;font-size:.9rem}
+.hrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hrow .bar{margin:0}
+.pips{display:flex;gap:4px}
+.pips i{width:18px;height:5px;border-radius:3px;background:var(--elev)}
+.pips i.on{background:var(--v)}
+.pips i.tg{box-shadow:inset 0 0 0 1.5px var(--v2)}
+
+/* ---- timer ---- */
+.clock{font-size:clamp(2.6rem,13vw,4.4rem);font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.05;text-align:center;margin:10px 0 4px}
+.clock.paused{color:var(--tx2)}
+.tsub{text-align:center;color:var(--tx2);font-size:.9rem;margin-bottom:16px}
+.tbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.banner{padding:12px 14px;border-radius:var(--rc);background:rgba(232,185,106,.08);border:1px solid rgba(232,185,106,.4);color:var(--warn);font-size:.9rem;margin-bottom:16px}
+.banner.err{background:rgba(239,113,133,.08);border-color:rgba(239,113,133,.4);color:var(--err)}
+.banner.info{background:var(--elev);border-color:var(--bd);color:var(--tx)}
+.banner.formerr{position:sticky;top:0;z-index:2;margin-bottom:12px}
+
+/* ---- date nav, calendar, heatmap ---- */
+.datenav{display:grid;gap:10px;margin-bottom:16px}
+.dn-main{display:flex;align-items:center;gap:10px}
+.dn-date{flex:1;text-align:center;line-height:1.25}
+.dn-big{font:500 1.35rem/1.2 var(--serif);display:block}
+.dn-sm{font-size:.875rem;color:var(--tx2)}
+.dn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dn-row input[type=date]{width:auto;min-height:36px;padding:4px 10px;font-size:.9rem}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cal .wd{text-align:center;font-size:.75rem;color:var(--tx2);padding:4px 0}
+.cal button{position:relative;width:100%;min-width:0;height:40px;padding:0;border-radius:var(--rc);border:1px solid transparent;background:transparent;font-size:.9rem;font-variant-numeric:tabular-nums;transition:background .12s;touch-action:manipulation}
+.cal button.today{border-color:var(--v)}
+.cal button.sel{background:var(--v);color:#101116;font-weight:650}
+.cal button.fut{color:var(--mut)}
+.cal button.has::after{content:"";position:absolute;bottom:5px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--v)}
+.cal button.sel.has::after{background:#101116}
+@media(hover:hover){.cal button:not(.sel):hover{background:var(--hov)}}
+.heat{overflow-x:auto;padding-bottom:6px;background:inherit}
+.heat .mon,.heat .cells{display:grid;grid-auto-flow:column;gap:3px;width:max-content}
+.heat .mon{grid-auto-flow:row;grid-template-columns:repeat(var(--cols),11px);margin-bottom:4px;font-size:.6875rem;color:var(--tx2);height:14px}
+.heat .mon span{white-space:nowrap;overflow:visible}
+.heat .cells{grid-template-rows:repeat(7,11px)}
+.heat .c{width:11px;height:11px;border-radius:3px;background:var(--elev);border:0;padding:0}
+.heat .c.l1{background:#3A3560}.heat .c.l2{background:#5B4FA0}.heat .c.l3{background:#8470D6}.heat .c.l4{background:var(--v2)}
+.heat .c.sel{outline:2px solid var(--tx);outline-offset:1px}
+.legend{display:flex;align-items:center;gap:4px;font-size:.75rem;color:var(--tx2);justify-content:flex-end;margin-top:6px}
+.legend i{width:11px;height:11px;border-radius:3px;background:var(--elev)}
+
+/* ---- dialogs & toasts ---- */
+dialog{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:var(--r);padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+dialog[open]{animation:pop .18s var(--ease);display:flex;flex-direction:column}
+dialog.closing{animation:popout .14s ease-in both}
+dialog::backdrop{background:rgba(6,7,10,.94)}
+@keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes popout{to{opacity:0;transform:translateY(8px)}}
+.dh{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:16px 20px 12px;border-bottom:1px solid var(--bd)}
+.dh h2{font:500 1.25rem/1.25 var(--serif)}
+.db{padding:20px;background:var(--card)}
+.df{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding-top:6px}
+@media(max-width:640px){
+ dialog{margin:auto 0 0;width:100%;max-width:none;border-radius:14px 14px 0 0;max-height:92dvh}
+ @keyframes pop{from{opacity:.5;transform:translateY(32px)}to{opacity:1;transform:none}}
+ .df .btn{flex:1}
+}
+.mlist{display:grid;gap:0;border-top:1px solid var(--bd);background:var(--card)}
+.dh{background:var(--card);position:sticky;top:0;z-index:1}
+.mlist a{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--bd);color:var(--tx);text-decoration:none;font-weight:550;min-height:56px}
+.mlist a small{display:block;font-weight:400}
+.mlist a svg{color:var(--v)}
+#toasts{position:fixed;z-index:100;left:12px;right:12px;bottom:calc(var(--navh) + 12px + env(safe-area-inset-bottom));display:grid;gap:8px;justify-items:center;pointer-events:none}
+@media(min-width:900px){#toasts{bottom:24px;left:calc(var(--side) + 12px)}}
+.toast{pointer-events:auto;max-width:480px;padding:11px 16px;border-radius:var(--rc);background:var(--elev);border:1px solid var(--bd);font-size:.9375rem;animation:vfade .2s ease-out both}
+.toast.err{border-color:var(--err)}.toast.ok{border-color:var(--ok)}
+
+/* ---- footer, skeleton, misc ---- */
+.foot{margin-top:48px;padding:24px 0 8px;border-top:1px solid var(--bd);display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;color:var(--tx2);font-size:.9rem}
+.foot .owner{color:var(--v2);font-weight:600}
+.foot small{color:var(--tx2)}
+.sk{display:grid;gap:14px}
+.sk div{height:96px;border-radius:var(--r);background:var(--card);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+.priv{padding-left:18px}
+.priv li{margin:8px 0;color:var(--tx2);font-size:.9375rem}
+.pre{white-space:pre-wrap;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+[data-sw]{display:block;transition:box-shadow .12s}
+input:checked+[data-sw]{box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--c)}
+input:focus-visible+[data-sw]{outline:2px solid var(--tx);outline-offset:6px}
+
+/* ---- Home ---- */
+.welcome{margin-bottom:28px}
+.welcome p{color:var(--tx2);font-size:1.0625rem;margin-top:8px;max-width:46ch}
+.welcome time{display:block;color:var(--tx2);font-size:.8125rem;margin-top:10px}
+.hero{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:24px;display:grid;gap:18px;margin-bottom:32px}
+.hero h2{font:500 1.4rem/1.25 var(--serif)}
+.hero p{color:var(--tx2);font-size:.9375rem;margin-top:4px;max-width:52ch}
+.hero-act{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
+.hero-act select{flex:1 1 200px;min-height:52px}
+.hero-act .btn{flex:0 1 auto}
+@media(max-width:520px){.hero{padding:18px}.hero-act .btn{flex:1 1 100%}}
+.today{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:16px 24px;padding:20px 0 4px;margin-bottom:8px}
+.today .fig b{display:block;font-size:1.9rem;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.today .fig span{font-size:.8125rem;color:var(--tx2)}
+.today .bar{grid-column:1/-1;margin:0}
+.today-none{padding:16px 0;color:var(--tx2);font-size:.9375rem;border-bottom:1px solid var(--bd);margin-bottom:8px}
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(min-width:700px){.qa{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.qa .btn{justify-content:flex-start;min-height:48px;white-space:normal;text-align:left;line-height:1.25;padding:8px 14px}
+.qa .btn svg{color:var(--v)}
+.plan h3{color:var(--tx2);font-weight:500;font-size:.8125rem;margin:16px 0 2px}
+.recent .item .rv{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.onb{background:var(--card);border:1px solid var(--bd);border-radius:var(--r);padding:24px;margin-bottom:32px}
+.onb h2{font:500 1.4rem/1.25 var(--serif)}
+.onb>p{color:var(--tx2);margin:6px 0 20px;max-width:52ch}
+.onb ol{list-style:none;padding:0;display:grid;gap:0}
+.onb li{display:grid;grid-template-columns:32px 1fr;gap:12px;padding:16px 0;border-top:1px solid var(--bd)}
+.onb .n{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--tx2);display:flex;align-items:center;justify-content:center;font-size:.8125rem;font-weight:600;color:var(--tx2)}
+.onb li.done .n{background:var(--v);border-color:var(--v);color:#101116}
+.onb li.done h3{color:var(--tx2)}
+.onb li p{color:var(--tx2);font-size:.875rem;margin:2px 0 10px}
+.onb form{display:flex;gap:10px;flex-wrap:wrap}
+.onb form input{flex:1 1 120px;max-width:200px}
+.onb .skip{margin-top:12px}
+.backup{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 16px;border:1px solid rgba(232,185,106,.4);border-radius:var(--r);margin-bottom:24px}
+.backup b{display:block}
+.backup p{color:var(--tx2);font-size:.875rem}
+/* day ruler: today's 24 hours; study = solid, skill = hatched, running = amber, now = line */
+.ruler{margin-top:16px}
+.rl-track{position:relative;height:36px;border-bottom:1px solid var(--tx2);background:repeating-linear-gradient(to right,var(--bd) 0 1px,transparent 1px calc(100%/24))}
+.rl-b{position:absolute;top:6px;bottom:1px;background:var(--v);border-radius:2px 2px 0 0}
+.rl-b.skill{background:repeating-linear-gradient(135deg,var(--v2) 0 2px,transparent 2px 5px);outline:1px solid var(--v2);outline-offset:-1px}
+.rl-b.live{background:var(--warn)}
+.rl-now{position:absolute;top:-3px;bottom:0;width:0;border-left:1px solid var(--warn)}
+.rl-lab{display:flex;justify-content:space-between;color:var(--tx2);font-size:.75rem;margin-top:6px;font-variant-numeric:tabular-nums}
+.rl-un{display:block;margin-top:8px}
+.clock:not(.paused){color:var(--tx)}
+.swbig{text-align:center;max-width:520px;margin:0 auto;padding:32px 20px}
+.swbig .t{font-size:clamp(2.8rem,15vw,4.8rem);font-weight:500;letter-spacing:.01em;font-variant-numeric:tabular-nums;margin:8px 0 24px;line-height:1}
+
+@media(max-width:640px){.grid.g3{gap:0 16px}.card{padding:16px}.pagehead{margin-bottom:20px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important;scroll-behavior:auto!important}}
+.mlist a .t{display:block}
+.dh,.db{flex:none}
+/* Some embedded viewers paint unfilled layout containers white. Every container takes its parent's colour explicitly;
+   :where() keeps specificity at zero so any component rule below still wins. */
+:where(#view,#dlg,#cfm) :where(div,form,label,ul,li,section,article,p,nav,header,footer,time){background-color:inherit}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<symbol id="i-logo" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#A78BFA"/><path d="M8 21.5l5-5.5 3.5 3L24 10.5" fill="none" stroke="#101116" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="24" cy="10.5" r="2.2" fill="#101116"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+<symbol id="i-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+<symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></symbol>
+<symbol id="i-checksq" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></symbol>
+<symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-chevL" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></symbol>
+<symbol id="i-chevR" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+<symbol id="i-archive" viewBox="0 0 24 24"><path d="M21 8v13H3V8M1 3h22v5H1zM10 12h4"/></symbol>
+<symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+<symbol id="i-trend" viewBox="0 0 24 24"><path d="M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"/></symbol>
+<symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></symbol>
+</svg>
+
+<a class="sr" href="#view" onclick="document.getElementById('view').focus();return false">Skip to content</a>
+<div class="shell">
+ <aside class="side" aria-label="Sidebar">
+  <a class="logo" href="#/dashboard"><svg width="30" height="30" aria-hidden="true"><use href="#i-logo"/></svg>Vistraker</a>
+  <nav aria-label="Main">
+<a data-r="dashboard" href="#/dashboard"><svg class="i"><use href="#i-home"/></svg>Dashboard</a>
+<div class="nav-g">Track</div>
+<a data-r="study" href="#/study"><svg class="i"><use href="#i-book"/></svg>Study Tracker</a>
+<a data-r="skills" href="#/skills"><svg class="i"><use href="#i-zap"/></svg>Skills</a>
+<a data-r="daily" href="#/daily"><svg class="i"><use href="#i-checksq"/></svg>Daily Activities</a>
+<a data-r="stopwatch" href="#/stopwatch"><svg class="i"><use href="#i-clock"/></svg>Stopwatch</a>
+<div class="nav-g">Review</div>
+<a data-r="history" href="#/history"><svg class="i"><use href="#i-calendar"/></svg>History</a>
+<a data-r="analytics" href="#/analytics"><svg class="i"><use href="#i-chart"/></svg>Analytics</a>
+<div class="nav-g">Manage</div>
+<a data-r="settings" href="#/settings"><svg class="i"><use href="#i-sliders"/></svg>Settings</a>
+</nav>
+  <div class="tag">Track Your Time. See Your Growth.</div>
+  <div class="side-credit"><span>Created by Vismay NK</span><a href="https://github.com/vismay-NK" target="_blank" rel="noopener noreferrer" aria-label="Vismay NK on GitHub (opens in a new tab)"><svg class="i" aria-hidden="true"><use href="#i-github"/></svg>GitHub</a></div>
+ </aside>
+ <div>
+  <header class="top"><a class="logo" href="#/dashboard"><svg width="30" height="30" aria-hidden="true"><use href="#i-logo"/></svg>Vistraker</a><span id="pagetitle" class="sm-t"></span></header>
+  <div id="sbanner" class="banner err" role="alert" hidden style="margin:12px 16px 0">Saving is unavailable in this browser (for example in a private window). Your records will be lost when you close this tab. Use Settings → Backup to keep a copy.</div>
+  <main><div id="view" tabindex="-1"><div class="sk" aria-label="Loading your data" role="status"><div></div><div></div><div></div></div></div></main>
+ </div>
+</div>
+<nav class="bnav" aria-label="Main">
+ <span class="ind" aria-hidden="true"><i></i></span>
+ <a data-r="dashboard" href="#/dashboard"><svg class="i"><use href="#i-home"/></svg>Home</a>
+ <a data-r="study" href="#/study"><svg class="i"><use href="#i-book"/></svg>Study</a>
+ <a data-r="skills" href="#/skills"><svg class="i"><use href="#i-zap"/></svg>Skills</a>
+ <a data-r="daily" href="#/daily"><svg class="i"><use href="#i-checksq"/></svg>Daily</a>
+ <button data-r="more" data-act="moreMenu" aria-haspopup="dialog"><svg class="i"><use href="#i-more"/></svg>Menu</button>
+</nav>
+<dialog id="dlg" aria-modal="true" aria-labelledby="dlgTitle"></dialog>
+<dialog id="cfm" role="alertdialog" aria-modal="true" aria-labelledby="cfmTitle"></dialog>
+<div id="announce" class="sr" role="status" aria-live="polite"></div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script>
+(()=>{'use strict';
+
+/* ============ Vistraker core: helpers, local database, timer logic ============ */
+const VERSION='1.0.0';
+const GITHUB='https://github.com/vismay-NK';
+const ROUTES=['dashboard','study','skills','daily','history','analytics','stopwatch','settings'];
+const TITLES={dashboard:'Dashboard',study:'Study Tracker',skills:'Skills',daily:'Daily Activities',history:'History',analytics:'Analytics',stopwatch:'Stopwatch',settings:'Settings'};
+const DEF={id:'settings',displayName:'',dailyGoalMin:null,weeklyGoalMin:null,skillDailyGoalMin:null,timerFormat:'hms',pomoWork:25,pomoBreak:5};
+const LEVELS=['Beginner','Learning','Intermediate','Advanced'];
+const COLORS=['#8B5CF6','#A78BFA','#34D399','#FBBF24','#FB7185','#38BDF8','#F472B6','#94A3B8'];
+const STATUS=['Not started','In progress','Completed'];
+const PRIO=['Low','Normal','High'];
+const DATA_STORES=['subjects','chapters','sessions','skills','tasks','habits','habitLogs','notes','goals'];
+const ALL_STORES=[...DATA_STORES,'meta'];
+
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+const uid=()=>{try{return crypto.randomUUID()}catch{const a=new Uint8Array(16);crypto.getRandomValues(a);return[...a].map(b=>b.toString(16).padStart(2,'0')).join('')}};
+const ic=(n,cls='')=>`<svg class="i ${cls}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+
+/* ---- local calendar dates (YYYY-MM-DD). Day arithmetic uses calendar math, never "minus 24h". ---- */
+const pad=n=>String(n).padStart(2,'0');
+const dstr=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+function parseD(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+const isDate=s=>typeof s==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(s)&&dstr(parseD(s))===s;
+const addDays=(s,n)=>{const d=parseD(s);d.setDate(d.getDate()+n);return dstr(d)};
+const dayNum=s=>{const[y,m,d]=s.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)};
+const diff=(a,b)=>dayNum(a)-dayNum(b);
+const today=()=>dstr(new Date());
+const weekStart=s=>addDays(s,-((parseD(s).getDay()+6)%7));
+const monthStart=s=>s.slice(0,8)+'01';
+const fmtDate=(s,o)=>parseD(s).toLocaleDateString(undefined,o||{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const fmtTime=iso=>new Date(iso).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+const hhmm=iso=>{const d=new Date(iso);return pad(d.getHours())+':'+pad(d.getMinutes())};
+const localISO=(date,time)=>{const[y,m,d]=date.split('-').map(Number);const[h,mi]=time.split(':').map(Number);return new Date(y,m-1,d,h,mi,0,0).toISOString()};
+
+function dur(sec){sec=Math.max(0,Math.round(sec));if(sec<60)return sec?sec+'s':'0m';const m=Math.floor(sec/60),h=Math.floor(m/60);return h?h+'h '+pad(m%60)+'m':m+'m'}
+function clockFmt(sec,fmt){sec=Math.max(0,Math.floor(sec));const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+ if(fmt==='compact')return h?`${h}h ${pad(m)}m ${pad(s)}s`:m?`${m}m ${pad(s)}s`:`${s}s`;
+ return pad(h)+':'+pad(m)+':'+pad(s)}
+const byName=(a,b)=>a.name.localeCompare(b.name);
+
+/* ---- in-memory mirror of IndexedDB (writes go to the database first, then the mirror) ---- */
+let db=null,storageOK=true,dirty=1;
+const S={};ALL_STORES.forEach(n=>S[n]=new Map());
+const list=n=>[...S[n].values()];
+const M={};const memo=(k,f)=>{if(M[k]&&M[k].v===dirty)return M[k].r;const r=f();M[k]={v:dirty,r};return r};
+
+function openDB(){return new Promise((res,rej)=>{
+ if(!window.indexedDB)return rej(new Error('IndexedDB unavailable'));
+ let r;try{r=indexedDB.open('vistraker',1)}catch(e){return rej(e)}
+ r.onupgradeneeded=()=>{for(const n of ALL_STORES)r.result.createObjectStore(n,{keyPath:'id'})};
+ r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'))})}
+async function loadAll(){
+ const next={};
+ for(const n of ALL_STORES){const rows=await new Promise((res,rej)=>{const q=db.transaction(n).objectStore(n).getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+  next[n]=new Map(rows.map(r=>[r.id,r]))}
+ for(const n of ALL_STORES)S[n]=next[n]}  /* swap only after everything loaded: never a half-loaded state */
+let bc=null;try{bc=window.BroadcastChannel?new BroadcastChannel('vistraker'):null}catch{}
+/* Every write is ONE transaction. If anything fails (even synchronously) the whole transaction is aborted, and the in-memory mirror is only changed after the database confirms. */
+async function commit(ops){
+ if(db)await new Promise((res,rej)=>{
+  let t;
+  try{
+   t=db.transaction([...new Set(ops.map(o=>o.s))],'readwrite');
+   t.oncomplete=()=>res();t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('aborted'));
+   for(const o of ops){const st=t.objectStore(o.s);o.op==='put'?st.put(o.r):o.op==='delete'?st.delete(o.id):st.clear()}
+  }catch(e){try{t&&t.abort()}catch{}rej(e)}});
+ for(const o of ops){const m=S[o.s];o.op==='put'?m.set(o.r.id,o.r):o.op==='delete'?m.delete(o.id):m.clear()}
+ dirty++;try{bc&&bc.postMessage('changed')}catch{}}
+const put=(s,r)=>commit([{s,op:'put',r}]);
+const del=(s,id)=>commit([{s,op:'delete',id}]);
+
+const cfg=()=>({...DEF,...(S.meta.get('settings')||{})});
+const saveCfg=p=>put('meta',{...cfg(),...p,id:'settings'});
+const getActive=()=>S.meta.get('active')||null;
+
+/* ---- indexes by local date ---- */
+function ix(){return memo('ix',()=>{
+ const I={sess:new Map(),ticks:new Map(),tasks:new Map(),notes:new Map(),hl:new Map(),act:new Set()};
+ const push=(m,k,v)=>{(m.get(k)||m.set(k,[]).get(k)).push(v)};
+ for(const s of S.sessions.values()){push(I.sess,s.localDate,s);I.act.add(s.localDate)}
+ for(const t of S.tasks.values()){if(t.tick){push(I.ticks,t.localDate,t);continue}push(I.tasks,t.localDate,t);I.act.add(t.localDate)}   /* "studied" ticks from Home live in the tasks store but are kept out of every task statistic */
+ for(const n of S.notes.values())if(n.content&&n.content.trim()){I.notes.set(n.localDate,n);I.act.add(n.localDate)}
+ for(const h of S.habitLogs.values()){push(I.hl,h.localDate,h);I.act.add(h.localDate)}
+ I.sorted=[...I.act].sort();return I})}
+function secsFor(date,kind){let t=0;for(const s of ix().sess.get(date)||[])if(!kind||s.kind===kind)t+=s.activeSeconds;return t}
+function countSess(date,kind){let t=0;for(const s of ix().sess.get(date)||[])if(!kind||s.kind===kind)t++;return t}
+function taskStats(date){const a=ix().tasks.get(date)||[];const done=a.filter(t=>t.completed).length;return{total:a.length,done,left:a.length-done,pct:a.length?Math.round(done/a.length*100):0}}
+function sumRange(from,to,kind){let t=0;for(let d=from,n=0;d<=to&&n<4000;d=addDays(d,1),n++)t+=secsFor(d,kind);return t}
+const weekSecs=(date,kind)=>{const w=weekStart(date);return sumRange(w,addDays(w,6),kind)};
+const subjName=s=>S.subjects.get(s.refId)?.name??(s.refName?s.refName+' (deleted)':'Deleted subject');
+const skillName=s=>S.skills.get(s.refId)?.name??(s.refName?s.refName+' (deleted)':'Deleted skill');
+const refName=s=>s.kind==='study'?subjName(s):skillName(s);
+const chapName=s=>s.chapterId?(S.chapters.get(s.chapterId)?.name??(s.chapterName||'Deleted chapter')):'';
+const subjColor=id=>S.subjects.get(id)?.color||'#8B5CF6';
+const totalsBy=kind=>memo('tb'+kind,()=>{const m=new Map();for(const s of S.sessions.values())if(s.kind===kind){const o=m.get(s.refId)||{secs:0,n:0};o.secs+=s.activeSeconds;o.n++;m.set(s.refId,o)}return m});
+const chapTotals=()=>memo('ct',()=>{const m=new Map();for(const s of S.sessions.values())if(s.chapterId){const o=m.get(s.chapterId)||{secs:0,n:0};o.secs+=s.activeSeconds;o.n++;m.set(s.chapterId,o)}return m});
+
+/* ---- streak: qualifying day = study time >= daily goal (if a goal is set), otherwise any study/skill time ---- */
+function qualifies(d){const g=cfg().dailyGoalMin;return g?secsFor(d,'study')>=g*60:(secsFor(d,'study')+secsFor(d,'skill'))>0}
+function streak(){let d=today();if(!qualifies(d))d=addDays(d,-1);let n=0;while(qualifies(d)&&n<4000){n++;d=addDays(d,-1)}return n}
+
+/* ---- timer: timestamps + active segments, never a bare counter ---- */
+function activeSecs(a,now=Date.now()){let t=0;for(const s of a.segments)t+=Math.max(0,(s.end??now)-s.start);return Math.max(0,Math.floor(t/1000))}
+const isPaused=a=>a.segments[a.segments.length-1].end!=null;
+async function startTimer(o){
+ if(getActive())throw new UserErr('A session is already running. Finish or cancel it first.');
+ const now=Date.now();
+ await put('meta',{id:'active',sessionId:uid(),kind:o.kind,refId:o.refId,refName:o.refName,chapterId:o.chapterId||null,chapterName:o.chapterName||'',title:o.title||'',notes:o.notes||'',pomo:!!o.pomo,startedAt:new Date(now).toISOString(),segments:[{start:now,end:null}]});
+}
+async function pauseTimer(){const a=getActive();if(!a||isPaused(a))return;const segs=a.segments.map(s=>({...s}));segs[segs.length-1].end=Date.now();await put('meta',{...a,segments:segs})}
+async function resumeTimer(){const a=getActive();if(!a||!isPaused(a))return;await put('meta',{...a,breakAt:null,segments:[...a.segments,{start:Date.now(),end:null}]})}
+/* Pomodoro break: pauses the timer (break time is never counted) and remembers when the break began. */
+async function startBreak(){const a=getActive();if(!a||isPaused(a))return;const now=Date.now(),segs=a.segments.map(s=>({...s}));segs[segs.length-1].end=now;await put('meta',{...a,segments:segs,breakAt:now})}
+async function cancelTimer(){await del('meta','active')}
+let finishing=false;
+/* Saves the session and removes the active timer in ONE transaction, using the timer's own session id, so a session can never be saved twice. */
+async function finishTimer(notes){
+ if(finishing)return null;finishing=true;
+ try{
+  const a=getActive();if(!a)return null;
+  const now=Date.now();const segs=a.segments.map(s=>({...s}));if(segs[segs.length-1].end==null)segs[segs.length-1].end=now;
+  const secs=activeSecs({segments:segs});
+  if(secs<1)throw new UserErr('No active time was recorded yet. Keep going, or cancel the session.');
+  const rec={id:a.sessionId,kind:a.kind,refId:a.refId,refName:a.refName,chapterId:a.chapterId,chapterName:a.chapterName,title:a.title,startedAt:a.startedAt,endedAt:new Date(Math.max(...segs.map(s=>s.end))).toISOString(),activeSeconds:secs,status:'completed',notes:notes??a.notes,source:a.pomo?'pomodoro':'timer',localDate:dstr(new Date(a.startedAt)),timeKnown:true};
+  await commit([{s:'sessions',op:'put',r:rec},{s:'meta',op:'delete',id:'active'}]);
+  return rec}
+ finally{finishing=false}}
+
+/* ============ Views ============ */
+let route='dashboard',selDate=today(),calMonth=null,showArchived={study:false,skills:false};
+const AN={period:'7d',from:'',to:'',trend:'weekly'};
+const PERIODS=[['today','Today'],['yesterday','Yesterday'],['7d','Last 7 days'],['30d','Last 30 days'],['week','This week'],['month','This month'],['custom','Custom range'],['all','All time']];
+
+const ghBtn=(cls='')=>`<a class="btn gh ${cls}" href="${GITHUB}" target="_blank" rel="noopener noreferrer" data-testid="github-btn">${ic('github')}<span>Visit My GitHub</span></a>`;
+const footer=()=>`<footer class="foot" data-testid="footer"><div>Built with care by <span class="owner">Vismay NK</span></div>${ghBtn('sm')}<small>© 2026 Vistraker. All rights reserved.</small></footer>`;
+const head=(t,sub,act='')=>`<div class="pagehead rise"><div><h1>${E(t)}</h1>${sub?`<p>${sub}</p>`:''}</div><div class="row">${act}</div></div>`;
+const count=(v,f)=>`<span class="count" data-v="${v}" data-f="${f}">${f==='dur'?dur(v):f==='pct'?v+'%':v}</span>`;
+const prog=(secs,goalMin,label)=>{
+ const g=goalMin*60,p=Math.min(1,secs/g),over=secs>g;
+ return `<div class="sm-t">${label?E(label)+' · ':''}${dur(secs)} of ${dur(g)}${over?` · <span style="color:var(--ok)">goal exceeded by ${dur(secs-g)}</span>`:''}</div><div class="bar ${over?'okc':''}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(p*100)}"><i style="--p:${p}"></i></div>`};
+const stat=(icon,lab,val,sub='')=>`<div class="stat rise"><div class="lab">${ic(icon)}${lab}</div><div class="val">${val}</div><small>${sub}</small></div>`;
+
+/* ---- charts (plain HTML/CSS, generated locally) ---- */
+function barChart(items,label,nav){
+ const max=Math.max(0,...items.map(i=>i.val)),step=Math.ceil(items.length/7);
+ return `<div class="chart"><div class="cbars" role="group" aria-label="${E(label)}">${items.map((it,i)=>`<button class="cb ${it.val?'':'z'} ${it.sel?'sel':''}" ${nav&&it.date?'':`aria-pressed="${!!it.sel}"`} style="--h:${max?Math.max(it.val/max*100,3):0};--i:${Math.min(i,24)}" data-tip="${E(it.tip)}" data-act="${nav&&it.date?'chartDay':'tip'}" ${it.date?`data-d="${it.date}"`:''} aria-label="${E(it.tip)}" title="${E(it.tip)}"><i></i></button>`).join('')}</div><div class="clabels" aria-hidden="true">${items.map((it,i)=>`<span>${i%step===0?E(it.label):''}</span>`).join('')}</div><div class="readout" aria-live="polite">${max?(nav?'Tap a day to open its history.':'Tap a bar to see its value.'):'No time recorded in this period.'}</div></div>`}
+function hbars(rows,empty){
+ if(!rows.length)return `<p class="sm-t">${empty}</p>`;const max=rows[0].secs||1;
+ return rows.map(r=>`<div class="hrow"><span class="nm" title="${E(r.name)}">${E(r.name)}</span><div class="bar"><i style="--p:${r.secs/max}"></i></div><b class="num">${dur(r.secs)}</b></div>`).join('')}
+
+/* ---- sessions / tasks / habits / notes blocks ---- */
+function sessItem(s){
+ const name=refName(s),ch=chapName(s);
+ const when=s.timeKnown===false?'Time not recorded':`${fmtTime(s.startedAt)} – ${fmtTime(s.endedAt)}`;
+ return `<li class="item"><span class="dot" style="--c:${s.kind==='study'?subjColor(s.refId):'#C4B5FD'}"></span><div class="grow"><b>${E(s.title||name)}</b><small>${s.kind==='study'?'Study':'Skill'} · ${E(name)}${ch?' · '+E(ch):''} · ${when}${s.source==='manual'?' · <span class="chip">Manual</span>':s.source==='pomodoro'?' · <span class="chip">Pomodoro</span>':''}</small>${s.notes?`<div class="note">${E(s.notes)}</div>`:''}</div><b class="num">${dur(s.activeSeconds)}</b><button class="icon-btn sm" data-act="editSess" data-id="${E(s.id)}" aria-label="Edit session">${ic('edit')}</button><button class="icon-btn sm" data-act="delSess" data-id="${E(s.id)}" aria-label="Delete session">${ic('trash')}</button></li>`}
+function taskItem(t){
+ const meta=[t.category,t.priority&&t.priority!=='Normal'?t.priority+' priority':'',t.plannedMin?'planned '+t.plannedMin+'m':'',t.actualMin?'actual '+t.actualMin+'m':''].filter(Boolean).map(E).join(' · ');
+ return `<li class="item ${t.completed?'done':''}"><button class="chk ${t.completed?'on':''}" role="checkbox" aria-checked="${!!t.completed}" aria-label="${t.completed?'Reopen':'Complete'} task: ${E(t.title)}" data-act="toggleTask" data-id="${E(t.id)}">${ic('check')}</button><div class="grow"><b class="t">${E(t.title)}</b>${meta?`<small>${meta}</small>`:''}${t.description?`<div class="note">${E(t.description)}</div>`:''}</div><button class="icon-btn sm" data-act="editTask" data-id="${E(t.id)}" aria-label="Edit task">${ic('edit')}</button><button class="icon-btn sm" data-act="delTask" data-id="${E(t.id)}" aria-label="Delete task">${ic('trash')}</button></li>`}
+function tasksBlock(d){
+ const a=(ix().tasks.get(d)||[]).slice().sort((x,y)=>x.completed-y.completed||PRIO.indexOf(y.priority)-PRIO.indexOf(x.priority)||x.createdAt.localeCompare(y.createdAt)),st=taskStats(d);
+ return `<section class="card rise"><div class="chead"><h2>Tasks</h2><span class="sm-t">${st.done} of ${st.total} done${st.total?' · '+st.pct+'%':''}</span></div>
+ ${st.total?`<div class="bar ${st.pct===100?'okc':''}"><i style="--p:${st.pct/100}"></i></div>`:''}
+ <form class="row" data-form="quickTask" data-d="${d}" style="margin:12px 0;flex-wrap:nowrap"><input name="title" placeholder="Add a task for this date" maxlength="200" required aria-label="New task title"><button class="btn pri" type="submit">Add</button></form>
+ ${a.length?`<ul class="list">${a.map(taskItem).join('')}</ul>`:'<p class="sm-t">No tasks for this date.</p>'}
+ <div style="margin-top:10px"><button class="btn sm ghost" data-act="newTask" data-d="${d}">${ic('plus')}More options</button></div></section>`}
+function habitsBlock(d){
+ const t=today(),logs=new Set((ix().hl.get(d)||[]).map(h=>h.habitId));
+ const hs=list('habits').filter(h=>logs.has(h.id)||(!h.archivedAt&&h.createdDate<=d)).sort(byName);
+ return `<section class="card rise"><div class="chead"><h2>Habits</h2><button class="btn sm" data-act="newHabit">${ic('plus')}Habit</button></div>
+ ${hs.length?`<ul class="list">${hs.map(h=>{const on=logs.has(h.id);return `<li class="item ${on?'done':''}"><button class="chk ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="${E(h.name)} on ${d}" data-act="toggleHabit" data-id="${E(h.id)}" data-d="${d}" ${d>t?'disabled':''}>${ic('check')}</button><div class="grow"><b class="t">${E(h.name)}</b></div><button class="icon-btn sm" data-act="delHabit" data-id="${E(h.id)}" aria-label="Archive habit ${E(h.name)}">${ic('archive')}</button></li>`}).join('')}</ul>${d>t?'<p class="sm-t" style="margin-top:8px">Habits can be checked off once the date arrives.</p>':''}`:'<p class="sm-t">No habits yet. Habits are completed separately for each date and never checked automatically.</p>'}</section>`}
+function noteBlock(d){
+ const n=ix().notes.get(d);
+ return `<section class="card rise"><h2>Daily reflection</h2><form class="form" data-form="note" data-d="${d}"><label class="f"><span class="sr">Reflection for ${d}</span><textarea name="content" maxlength="5000" placeholder="What did I learn today?&#10;What went well?&#10;What should I improve tomorrow?">${E(n?.content||'')}</textarea></label><div class="df"><button class="btn pri" type="submit">Save reflection</button></div></form></section>`}
+
+/* ---- date navigation ---- */
+function dateNav(){
+ const d=selDate,t=today(),sorted=ix().sorted,prevA=[...sorted].reverse().find(x=>x<d),nextA=sorted.find(x=>x>d);
+ return `<div class="datenav rise"><div class="dn-main"><button class="icon-btn" data-act="dprev" aria-label="Previous day">${ic('chevL')}</button><div class="dn-date" aria-live="polite"><span class="dn-big">${fmtDate(d,{weekday:'long'})}</span><span class="dn-sm">${fmtDate(d,{day:'numeric',month:'long',year:'numeric'})}</span></div><button class="icon-btn" data-act="dnext" aria-label="Next day">${ic('chevR')}</button></div>
+ <div class="dn-row"><button class="btn sm pri" data-act="dtoday" ${d===t?'disabled':''}>Today</button><button class="btn sm" data-act="dgo" data-d="${prevA||''}" ${prevA?'':'disabled'}>← Earlier activity</button><button class="btn sm" data-act="dgo" data-d="${nextA||''}" ${nextA?'':'disabled'}>Later activity →</button><input type="date" id="datePick" value="${d}" aria-label="Go to a date">${d>t?'<span class="chip warn">Future date</span>':d===t?'<span class="chip">Today</span>':''}</div></div>`}
+
+function calendar(){
+ const base=calMonth||monthStart(selDate),f=parseD(base),lead=(f.getDay()+6)%7,dim=new Date(f.getFullYear(),f.getMonth()+1,0).getDate(),t=today(),act=ix().act;
+ let cells='';for(let i=0;i<lead;i++)cells+='<span></span>';
+ for(let i=1;i<=dim;i++){const d=base.slice(0,8)+pad(i);cells+=`<button data-act="pickDate" data-d="${d}" class="${d===selDate?'sel':''} ${d===t?'today':''} ${d>t?'fut':''} ${act.has(d)?'has':''}" aria-label="${fmtDate(d,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}${act.has(d)?', has records':''}" ${d===selDate?'aria-current="date"':''}>${i}</button>`}
+ return `<section class="card rise"><div class="chead"><button class="icon-btn" data-act="calNav" data-n="-1" aria-label="Previous month">${ic('chevL')}</button><h2 aria-live="polite">${f.toLocaleDateString(undefined,{month:'long',year:'numeric'})}</h2><button class="icon-btn" data-act="calNav" data-n="1" aria-label="Next month">${ic('chevR')}</button></div>
+ <div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(w=>`<span class="wd">${w}</span>`).join('')}${cells}</div><p class="sm-t" style="margin-top:8px">A dot marks dates that have saved records.</p></section>`}
+
+function heatmap(){
+ const t=today(),start=weekStart(addDays(t,-364)),days=diff(t,start)+1,cols=Math.ceil(days/7);
+ const vals=[];let max=0,active=0;
+ for(let i=0;i<days;i++){const d=addDays(start,i),v=secsFor(d);vals.push([d,v]);if(v>max)max=v;if(v>0)active++}
+ const ch=[];let last='';
+ for(let c=0;c<cols;c++){const d=addDays(start,c*7),m=d.slice(0,7);if(m!==last){last=m;ch.push({c,l:fmtDate(d,{month:'short'})})}}
+ const mon=ch.filter((x,i)=>!ch[i+1]||ch[i+1].c-x.c>=3).map(x=>`<span style="grid-column:${x.c+1}">${x.l}</span>`).join('');
+ const cells=vals.map(([d,v])=>{const l=!v?0:Math.min(4,Math.ceil(v/max*4));return `<button class="c l${l} ${d===selDate?'sel':''}" data-act="pickDate" data-d="${d}" tabindex="-1" aria-hidden="true" title="${fmtDate(d)} · ${v?dur(v):'no time recorded'}"></button>`}).join('');
+ return `<section class="card rise"><div class="chead"><h2>Activity heatmap</h2><span class="sm-t">${active} active day${active===1?'':'s'} in the last year</span></div><div class="heat" id="heat" role="img" aria-label="Heatmap of study and skill time over the last year. ${active} active days. Use the calendar above to browse dates with the keyboard."><div class="mon" style="--cols:${cols}">${mon}</div><div class="cells">${cells}</div></div><div class="legend">Less <i></i><i style="background:#3b2a73"></i><i style="background:#5b3fb3"></i><i style="background:#7c52e8"></i><i style="background:#b69bff"></i> More · study + skill time</div></section>`}
+
+/* ---- timer UI ---- */
+function clockTexts(a){
+ const c=cfg(),secs=activeSecs(a);
+ if(a.pomo&&a.breakAt&&isPaused(a)){const left=Math.max(0,c.pomoBreak*60-Math.floor((Date.now()-a.breakAt)/1000));return{main:clockFmt(left,c.timerFormat),sub:left?`Break time · ${clockFmt(secs,c.timerFormat)} focused so far (break is not counted)`:`Break is over — press Resume when you are ready · ${clockFmt(secs,c.timerFormat)} focused so far`}}
+ if(a.pomo){const w=c.pomoWork*60,blocks=Math.floor(secs/w);return{main:clockFmt(w-secs%w,c.timerFormat),sub:`Focus block ${blocks+1} · ${clockFmt(secs,c.timerFormat)} focused in total${blocks?` · ${blocks} block${blocks>1?'s':''} done`:''}`}}
+ return{main:clockFmt(secs,c.timerFormat),sub:isPaused(a)?'Paused — this time is not counted':'Active time only; paused time is excluded'}}
+function runningCard(a){
+ const p=isPaused(a),t=clockTexts(a),name=a.refName||'';
+ const live=S[a.kind==='study'?'subjects':'skills'].get(a.refId)?.name||name,ch=a.chapterId?(S.chapters.get(a.chapterId)?.name||a.chapterName):'';
+ return `<section class="card glow rise" data-run><div class="chead"><h2>${a.kind==='study'?'Study':'Skill'} session</h2><span class="chip ${p?'warn':'ok'}">${p?(a.breakAt?'On break':'Paused'):'Running'}</span></div>
+ <div class="tsub" style="margin:8px 0 0"><b>${E(a.title||live)}</b> · ${E(live)}${ch?' · '+E(ch):''}${a.pomo?' · Pomodoro':''}</div>
+ <div class="clock ${p?'paused':''}" data-clock="main" role="timer" aria-label="Session timer">${t.main}</div><div class="tsub" data-clock="sub">${t.sub}</div>
+ <div class="tbtns">${p?`<button class="btn pri lg" data-act="resume">${ic('play')}Resume</button>`:`<button class="btn lg" data-act="pause">${ic('pause')}Pause</button>${a.pomo?`<button class="btn lg" data-act="takeBreak">Take a ${cfg().pomoBreak}-min break</button>`:''}`}<button class="btn ok lg" data-act="finish">${ic('check')}Finish</button><button class="btn danger lg" data-act="cancel">${ic('x')}Cancel</button></div></section>`}
+const chapOpts=(sid,sel)=>{const cs=list('chapters').filter(c=>c.subjectId===sid).sort(byName);return `<option value="">No specific chapter</option>${cs.map(c=>`<option value="${E(c.id)}" ${c.id===sel?'selected':''}>${E(c.name)}</option>`).join('')}<option value="__new">＋ New chapter…</option>`};
+function timerCard(kind){
+ const a=getActive();
+ if(a&&a.kind===kind)return runningCard(a);
+ if(a)return `<section class="card rise"><div class="banner info" style="margin:0">A ${a.kind} session is already running. Only one timed session can run at a time — <a href="#/${a.kind==='study'?'study':'skills'}">go to it</a> to finish or cancel it first.</div></section>`;
+ const c=cfg();
+ if(kind==='study'){
+  const subs=list('subjects').filter(s=>!s.archivedAt).sort(byName),first=subs[0]?.id;
+  return `<section class="card rise"><h2>Start a study session</h2><form class="form" data-form="start" data-kind="study">
+  <div class="fgrid"><label class="f">Subject<select name="ref" required>${subs.map(s=>`<option value="${E(s.id)}">${E(s.name)}</option>`).join('')}<option value="__new" ${subs.length?'':'selected'}>＋ New subject…</option></select></label>
+  <label class="f">Chapter or topic<select name="chapter">${chapOpts(first)}</select></label></div>
+  <label class="f" data-new="ref" ${subs.length?'hidden':''}>New subject name<input name="newRef" maxlength="80" placeholder="e.g. Mathematics"></label>
+  <label class="f" data-new="chapter" hidden>New chapter name<input name="newChap" maxlength="120"></label>
+  <label class="f">Session title (optional)<input name="title" maxlength="120"></label>
+  <label class="f">Notes (optional)<textarea name="notes" maxlength="2000"></textarea></label>
+  <label class="row" style="gap:10px"><input type="checkbox" name="pomo"><span>Pomodoro mode <small>(${c.pomoWork}-minute focus blocks; pause for breaks)</small></span></label>
+  <button class="btn pri lg" type="submit">${ic('play')}Start session</button></form></section>`}
+ const sk=list('skills').filter(s=>!s.archivedAt).sort(byName);
+ return `<section class="card rise"><h2>Start a skill session</h2><form class="form" data-form="start" data-kind="skill">
+  <label class="f">Skill<select name="ref" required>${sk.map(s=>`<option value="${E(s.id)}">${E(s.name)}</option>`).join('')}<option value="__new" ${sk.length?'':'selected'}>＋ New skill…</option></select></label>
+  <label class="f" data-new="ref" ${sk.length?'hidden':''}>New skill name<input name="newRef" maxlength="80" placeholder="e.g. Video editing"></label>
+  <label class="f">Session title (optional)<input name="title" maxlength="120"></label>
+  <label class="f">Notes (optional)<textarea name="notes" maxlength="2000"></textarea></label>
+  <label class="row" style="gap:10px"><input type="checkbox" name="pomo"><span>Pomodoro mode <small>(${c.pomoWork}-minute focus blocks)</small></span></label>
+  <button class="btn pri lg" type="submit">${ic('play')}Start session</button></form></section>`}
+
+/* ---- Backup reminder: only when there is data, and 7+ days since the last download (or since the oldest record if never) ---- */
+function backupDue(){
+ const bk=S.meta.get('backup')||{},now=Date.now();if(now<(bk.snoozeUntil||0))return null;
+ let ref=bk.lastAt?Date.parse(bk.lastAt):NaN;
+ if(isNaN(ref)){let min=Infinity,n=0;for(const st of['subjects','tasks','sessions','skills'])for(const r of S[st].values()){n++;const t=Date.parse(r.createdAt||r.startedAt);if(t<min)min=t}if(!n||!isFinite(min))return null;ref=min}
+ const days=Math.floor((now-ref)/864e5);return days>=7?{never:!bk.lastAt,days}:null}
+function backupCard(){const d=backupDue();if(!d)return'';
+ return `<section class="backup" aria-label="Backup reminder"><div><b>Back up your data</b><p>${d.never?'You have not downloaded a backup yet.':'Your last backup was '+d.days+' days ago.'} Your records exist only in this browser.</p></div><div class="row"><button class="btn sm pri" data-act="exportJson">${ic('download')}Back up now</button><button class="btn sm" data-act="backupLater">Remind me in 3 days</button></div></section>`}
+
+/* ---- Day ruler: today's 24 hours as a ruler; study = solid, skill = outlined, running timer = amber, now = amber line ---- */
+const minOfDay=ms=>{const d=new Date(ms);return d.getHours()*60+d.getMinutes()+d.getSeconds()/60};
+const pctDay=m=>Math.max(0,Math.min(100,m/1440*100));
+function dayRuler(t,a){
+ const sess=(ix().sess.get(t)||[]).filter(s=>s.timeKnown!==false).slice().sort((x,y)=>x.startedAt.localeCompare(y.startedAt));
+ const untimed=(ix().sess.get(t)||[]).filter(s=>s.timeKnown===false),blk=[];
+ sess.forEach((s,i)=>{const st=new Date(s.startedAt).getTime(),en=Math.max(new Date(s.endedAt).getTime(),st+s.activeSeconds*1000),l=pctDay(minOfDay(st)),w=Math.max(.7,Math.min(100-l,(en-st)/60000/1440*100));
+  blk.push(`<i class="rl-b ${s.kind}" style="left:${l.toFixed(2)}%;width:${w.toFixed(2)}%;--i:${i}" title="${E(s.title||refName(s))} · ${dur(s.activeSeconds)}"></i>`)});
+ let live='';if(a){const first=a.segments&&a.segments[0]?a.segments[0].start:Date.now(),l=pctDay(minOfDay(first));live=`<i class="rl-b live" data-live data-from="${l.toFixed(3)}" style="left:${l.toFixed(2)}%;width:${Math.max(.7,pctDay(minOfDay(Date.now()))-l).toFixed(2)}%" title="Running now"></i>`}
+ const n=sess.length+untimed.length+(a?1:0),lab=n?`${sess.length+untimed.length} saved session${sess.length+untimed.length===1?'':'s'} today${a?', timer running':''}. Details are listed below.`:'No sessions yet today.';
+ return `<div class="ruler" role="img" aria-label="Today as a 24-hour ruler. ${E(lab)}"><div class="rl-track">${blk.join('')}${live}<i class="rl-now" data-now style="left:${pctDay(minOfDay(Date.now())).toFixed(2)}%"></i></div><div class="rl-lab" aria-hidden="true"><span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>12am</span></div></div>${untimed.length?`<small class="rl-un">${untimed.length} more session${untimed.length===1?'':'s'} without a start time (${dur(untimed.reduce((x,s)=>x+s.activeSeconds,0))})</small>`:''}`}
+function rulerLive(){   /* moves the now line and grows the running block; touches the DOM only when the value changed */
+ const n=$('[data-now]');if(!n)return;const p=pctDay(minOfDay(Date.now())).toFixed(2)+'%';if(n.style.left!==p)n.style.left=p;
+ const l=$('[data-live]');if(l){const w=Math.max(.7,pctDay(minOfDay(Date.now()))-parseFloat(l.dataset.from)).toFixed(2)+'%';if(l.style.width!==w)l.style.width=w}}
+/* ---- Dashboard ---- */
+const studyTaskTitle=s=>'Studied: '+s.name;
+const studyTick=(s,d)=>(ix().ticks.get(d)||[]).find(t=>t.subjectId===s.id);
+function planBlock(t){
+ const tasks=(ix().tasks.get(t)||[]).filter(x=>x.category!=='Study').slice().sort((x,y)=>x.completed-y.completed||x.createdAt.localeCompare(y.createdAt));
+ const subs=list('subjects').filter(s=>!s.archivedAt).sort(byName),sess=ix().sess.get(t)||[],logs=new Set((ix().hl.get(t)||[]).map(h=>h.habitId));
+ const hs=list('habits').filter(h=>logs.has(h.id)||(!h.archivedAt&&h.createdDate<=t)).sort(byName);
+ const rows=subs.map(s=>{const secs=sess.filter(x=>x.kind==='study'&&x.refId===s.id).reduce((a,x)=>a+x.activeSeconds,0),tk=studyTick(s,t),on=secs>0||!!(tk&&tk.completed);
+  return{on,html:`<li class="item ${on?'done':''}"><button class="chk ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="${on?'Studied':'Mark as studied'}: ${E(s.name)}" data-act="tickSubject" data-id="${E(s.id)}">${ic('check')}</button><div class="grow"><b class="t"><span class="dot" style="--c:${s.color};display:inline-block;margin-right:8px"></span>${E(s.name)}</b><small>${secs?'Studied '+dur(secs)+' (from your timer)':on?'Ticked as studied today':'Tick when you have studied this'}</small></div></li>`}});
+ const tr=tasks.map(x=>({on:!!x.completed,html:taskItem(x)}));
+ const hr=hs.map(h=>{const on=logs.has(h.id);return{on,html:`<li class="item ${on?'done':''}"><button class="chk ${on?'on':''}" role="checkbox" aria-checked="${on}" aria-label="${E(h.name)} today" data-act="toggleHabit" data-id="${E(h.id)}" data-d="${t}">${ic('check')}</button><div class="grow"><b class="t">${E(h.name)}</b><small>Habit</small></div></li>`}});
+ const all=[...rows,...tr,...hr],done=all.filter(x=>x.on).length;
+ return `<section class="plan rise" aria-labelledby="planh"><div class="sec"><h2 id="planh">Today's plan</h2><span class="sm-t">${all.length?done+' of '+all.length+' done':''}</span></div>
+ ${all.length?`<div class="bar ${done===all.length?'okc':''}" role="progressbar" aria-label="Plan progress" aria-valuemin="0" aria-valuemax="${all.length}" aria-valuenow="${done}"><i style="--p:${done/all.length}"></i></div>`:''}
+ ${rows.length?`<h3>Subjects</h3><ul class="list">${rows.map(x=>x.html).join('')}</ul>`:''}
+ ${tr.length?`<h3>Tasks</h3><ul class="list">${tr.map(x=>x.html).join('')}</ul>`:''}
+ ${hr.length?`<h3>Habits</h3><ul class="list">${hr.map(x=>x.html).join('')}</ul>`:''}
+ ${all.length?'':`<p class="sm-t" style="margin-top:12px">Nothing planned yet. Add a subject, task or habit with the quick actions above and it will appear here.</p>`}</section>`}
+function recentBlock(){
+ const all=list('sessions').slice().sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).slice(0,5);
+ return `<section class="recent rise" aria-labelledby="rech"><div class="sec"><h2 id="rech">Recent activity</h2>${all.length?'<a class="sm-t" href="#/history">View history</a>':''}</div>
+ ${all.length?`<ul class="list">${all.map(s=>{const nm=refName(s);return `<li class="item"><span class="dot" style="--c:${s.kind==='study'?subjColor(s.refId):'#C4B5FD'}"></span><div class="grow"><b>${E(s.title||nm)}</b><small>${s.kind==='study'?'Study':'Skill'} · ${E(nm)} · ${fmtDate(s.localDate||s.startedAt.slice(0,10),{day:'numeric',month:'short'})}</small></div><span class="rv">${dur(s.activeSeconds)}</span></li>`}).join('')}</ul>`
+ :`<p class="sm-t" style="margin-top:4px"><b style="color:var(--tx);display:block">No activity yet</b>Your activity history will appear here after your first session.</p>`}</section>`}
+function onboarding(){
+ const ob=S.meta.get('onboarding');if(ob&&ob.skipped)return'';
+ const hasSub=list('subjects').length>0,hasSess=S.sessions.size>0||!!getActive();if(hasSess)return'';
+ const c=cfg(),g=!!c.dailyGoalMin;
+ return `<section class="onb rise" aria-labelledby="onbh"><h2 id="onbh">Welcome to Vistraker</h2><p>A private place to track study time, skills and daily progress. Everything stays on this device. Four quick steps, all optional.</p><ol>
+ <li class="done"><span class="n">${ic('check')}</span><div><h3>Understand Vistraker</h3><p>Time your study with a timer, organise subjects into chapters, track skills, tick off tasks and habits, and review it all in History and Analytics.</p></div></li>
+ <li class="${hasSub?'done':''}"><span class="n">${hasSub?ic('check'):'2'}</span><div><h3>Add your first subject</h3><p>${hasSub?"":"No subjects yet. "}A subject is anything you study, such as Mathematics or Biology.</p>${hasSub?'':`<button class="btn sm pri" data-act="newSubject">${ic('plus')}Add your first subject</button>`}</div></li>
+ <li class="${g?'done':''}"><span class="n">${g?ic('check'):'3'}</span><div><h3>Set a daily goal <span class="mut">(optional)</span></h3><p>${g?'Your goal is '+dur(c.dailyGoalMin*60)+' a day.':'How many minutes would you like to study each day?'}</p>${g?'':`<form data-form="onbGoal"><label class="sr" for="onbmin">Daily study goal in minutes</label><input id="onbmin" name="min" type="number" min="1" max="1440" inputmode="numeric" placeholder="e.g. 60"><button class="btn sm" type="submit">Save goal</button></form>`}</div></li>
+ <li><span class="n">4</span><div><h3>Start your first session</h3><p>${hasSub?'Use the "Start a study session" button above.':'Add a subject first, then start a session.'}</p></div></li></ol>
+ <button class="btn sm ghost skip" data-act="onbSkip">Skip setup</button></section>`}
+function startHero(a){
+ if(a)return runningCard(a);
+ const subs=list('subjects').filter(s=>!s.archivedAt).sort(byName);
+ if(!subs.length)return `<section class="hero rise"><div><h2>No subjects yet</h2><p>Start by adding the subjects you want to study. You can organise each subject into chapters and track your study time.</p></div><div class="hero-act"><button class="btn pri lg" data-act="newSubject">${ic('plus')}Add your first subject</button></div></section>`;
+ return `<form class="hero rise" data-form="start" data-kind="study"><div><h2>Ready when you are</h2><p>Choose a subject and the timer starts straight away.</p></div><div class="hero-act"><label class="sr" for="dsub">Subject</label><select id="dsub" name="ref" required>${subs.map(s=>`<option value="${E(s.id)}">${E(s.name)}</option>`).join('')}</select><button class="btn pri lg" type="submit">${ic('play')}Start a study session</button></div></form>`}
+function todayBlock(t,a){
+ const c=cfg(),st=secsFor(t,'study'),sk=secsFor(t,'skill'),g=c.dailyGoalMin?c.dailyGoalMin*60:0,sg=c.skillDailyGoalMin?c.skillDailyGoalMin*60:0,wk=c.weeklyGoalMin?c.weeklyGoalMin*60:0;
+ const figs=[];
+ if(st||g)figs.push(`<div class="fig"><b>${count(st,'dur')}</b><span>Study today</span></div>`);
+ if(sk||sg)figs.push(`<div class="fig"><b>${count(sk,'dur')}</b><span>Skill practice${sg?' of '+dur(sg)+' goal':''}</span></div>`);
+ if(g)figs.push(`<div class="fig"><b>${Math.min(999,Math.round(st/g*100))}%</b><span>${st>g?'Daily goal exceeded by '+dur(st-g):'of '+dur(g)+' daily goal'}</span></div>`);
+ if(wk)figs.push(`<div class="fig"><b>${dur(weekSecs(t,'study'))}</b><span>of ${dur(wk)} this week</span></div>`);
+ if(a)figs.push(`<div class="fig"><b>${a.kind==='study'?'Study':'Skill'}</b><span>session ${isPaused(a)?'paused':'running'}</span></div>`);
+ const any=(ix().sess.get(t)||[]).length||a;
+ return `<section class="rise" aria-labelledby="toh"><div class="sec"><h2 id="toh">Today's progress</h2></div>${figs.length?`<div class="today">${figs.join('')}${g?`<div class="bar ${st>=g?'okc':''}" role="progressbar" aria-label="Daily goal progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.min(100,Math.round(st/g*100))}"><i style="--p:${Math.min(1,st/g)}"></i></div>`:''}</div>`:`<p class="today-none">Nothing logged yet today. Your first session will appear here.</p>`}${any?dayRuler(t,a):''}</section>`}
+function quickActions(t){
+ const sw=swState(),run=!!sw.startedAt,hasSk=list('skills').some(s=>!s.archivedAt);
+ return `<section class="block rise" aria-labelledby="qah"><div class="sec"><h2 id="qah">Quick actions</h2></div><div class="qa">
+ <button class="btn" data-act="newSubject">${ic('book')}Add subject</button>
+ ${hasSk?`<a class="btn" href="#/skills">${ic('zap')}Start skill practice</a>`:`<button class="btn" data-act="newSkill">${ic('zap')}Start skill practice</button>`}
+ <button class="btn" data-act="newTask" data-d="${t}">${ic('checksq')}Add task</button>
+ <button class="btn" data-act="newGoal" data-d="${t}">${ic('target')}Add goal</button>
+ <button class="btn" data-act="newHabit">${ic('trend')}Add habit</button>
+ <a class="btn" href="#/stopwatch">${ic('clock')}Open stopwatch${run?' <span class="chip ok">Running</span>':''}</a></div></section>`}
+function vDashboard(){
+ const t=today(),c=cfg(),a=getActive(),h=new Date().getHours();
+ const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening',ob=onboarding();
+ return `<div class="welcome rise"><h1>${greet}${c.displayName?', '+E(c.displayName):''}.</h1><p>Make today count. Your progress starts with one focused session.</p><time datetime="${t}">${fmtDate(t,{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</time></div>`+
+ backupCard()+(ob?ob:'')+(ob&&!list('subjects').length&&!a?'':startHero(a))+todayBlock(t,a)+quickActions(t)+
+ `<div class="cols">${planBlock(t)}${recentBlock()}</div>`+footer()}
+const timerCardDash=a=>runningCard(a);
+
+/* ---- Study ---- */
+function vStudy(){
+ const tot=totalsBy('study'),ct=chapTotals(),t=today();
+ const all=list('subjects').sort(byName),subs=all.filter(s=>showArchived.study?true:!s.archivedAt),arch=all.filter(s=>s.archivedAt).length;
+ return head('Study Tracker','Organise what you study into subjects and chapters, and time each study session.',`<button class="btn" data-act="addSess" data-d="${t}" data-kind="study">${ic('plus')}Past session</button><button class="btn pri" data-act="newSubject">${ic('plus')}Subject</button>`)+
+ timerCard('study')+
+ `<div class="chead rise" style="margin:20px 0 12px"><h2>Subjects</h2>${arch?`<button class="btn sm ghost" data-act="toggleArch" data-k="study">${showArchived.study?'Hide':'Show'} archived (${arch})</button>`:''}</div>`+
+ (subs.length?`<div class="rows">${subs.map(s=>{const o=tot.get(s.id)||{secs:0,n:0},chs=list('chapters').filter(c=>c.subjectId===s.id),done=chs.filter(c=>c.status==='Completed').length,g=S.goals.get('sg-'+s.id);
+  return `<article class="rowitem rise"><span class="dot" style="--c:${s.color}"></span><div class="grow"><button class="stretch" data-act="subjDetail" data-id="${E(s.id)}"><h3>${E(s.name)}</h3></button><span class="meta">${o.n} session${o.n===1?'':'s'} · ${done}/${chs.length} chapters completed${s.archivedAt?' · Archived':''}</span>${g?`<div class="prg">${prog(subjWeek(s.id,t),g.minutes,'This week')}</div>`:''}</div><span class="rv">${dur(o.secs)}</span></article>`}).join('')}</div>`
+ :`<section class="empty rise"><h2>No subjects yet</h2><p>Start by adding the subjects you want to study. You can organise each subject into chapters and track your study time.</p><div class="row"><button class="btn pri" data-act="newSubject">${ic('plus')}Add your first subject</button></div></section>`)+footer()}
+function subjWeek(id,date){const w=weekStart(date);let t=0;for(let d=w,i=0;i<7;d=addDays(d,1),i++)for(const s of ix().sess.get(d)||[])if(s.kind==='study'&&s.refId===id)t+=s.activeSeconds;return t}
+function skillWeek(id,date){const w=weekStart(date);let t=0;for(let d=w,i=0;i<7;d=addDays(d,1),i++)for(const s of ix().sess.get(d)||[])if(s.kind==='skill'&&s.refId===id)t+=s.activeSeconds;return t}
+
+/* ---- Skills ---- */
+function pips(l,tg){return `<span class="pips" aria-label="Current level ${E(l)}, target ${E(tg)}">${LEVELS.map((_,i)=>`<i class="${i<=LEVELS.indexOf(l)?'on':''} ${i===LEVELS.indexOf(tg)?'tg':''}"></i>`).join('')}</span>`}
+function vSkills(){
+ const tot=totalsBy('skill'),t=today(),all=list('skills').sort(byName),sk=all.filter(s=>showArchived.skills?true:!s.archivedAt),arch=all.filter(s=>s.archivedAt).length;
+ const ideas=['AI tools','Video editing','Coding','Graphic design','English communication','Research','Writing'];
+ return head('Skills','Track the skills you are learning and the time you spend practising them.',`<button class="btn" data-act="addSess" data-d="${t}" data-kind="skill">${ic('plus')}Past session</button><button class="btn pri" data-act="newSkill">${ic('plus')}Skill</button>`)+
+ timerCard('skill')+
+ `<div class="chead rise" style="margin:20px 0 12px"><h2>Your skills</h2>${arch?`<button class="btn sm ghost" data-act="toggleArch" data-k="skills">${showArchived.skills?'Hide':'Show'} archived (${arch})</button>`:''}</div>`+
+ (sk.length?`<div class="rows">${sk.map(s=>{const o=tot.get(s.id)||{secs:0,n:0};
+  return `<article class="rowitem rise"><div class="grow"><button class="stretch" data-act="skillDetail" data-id="${E(s.id)}"><h3>${E(s.name)}</h3></button><span class="meta">${E(s.category||'Uncategorised')} · ${o.n} session${o.n===1?'':'s'} · ${dur(skillWeek(s.id,t))} this week${s.archivedAt?' · Archived':''}</span><div style="margin-top:8px">${pips(s.currentLevel,s.targetLevel)}<span class="meta">${E(s.currentLevel)} → ${E(s.targetLevel)} (self-assessed)</span></div>${s.goalMin?`<div class="prg">${prog(skillWeek(s.id,t),s.goalMin,'Weekly goal')}</div>`:''}</div><span class="rv">${dur(o.secs)}</span></article>`}).join('')}</div>`
+ :`<section class="empty rise"><h2>No skills yet</h2><p>Track the skills you are learning and see how your practice develops over time.</p><div class="row"><button class="btn pri" data-act="newSkill">${ic('plus')}Add your first skill</button></div><p class="sm-t" style="margin-top:16px">Or start from an idea:</p><div class="row" style="margin-top:8px">${ideas.map(i=>`<button class="btn sm" data-act="newSkill" data-name="${E(i)}">${E(i)}</button>`).join('')}</div></section>`)+footer()}
+
+/* ---- Daily ---- */
+function vDaily(){
+ const d=selDate;
+ return head('Daily Activities','Plan tasks, build habits and write a short reflection for each day.')+dateNav()+`<div id="swipe"><div class="grid g2" style="align-items:start"><div>${tasksBlock(d)}</div><div class="grid" style="margin:0">${habitsBlock(d)}${noteBlock(d)}</div></div></div>`+footer()}
+
+/* ---- History ---- */
+function vHistory(){
+ const d=selDate,I=ix(),ss=(I.sess.get(d)||[]).slice().sort((a,b)=>a.startedAt.localeCompare(b.startedAt)),ts=taskStats(d),c=cfg();
+ const hasHab=(I.hl.get(d)||[]).length,has=ss.length||ts.total||I.notes.get(d)||hasHab,st=secsFor(d,'study'),sk=secsFor(d,'skill');
+ let detail;
+ if(!has)detail=`<section class="card empty rise"><h2>No activity recorded for this date.</h2><p>${d>today()?'This date is in the future. You can plan tasks for it.':'You can add a record for this date, or head back to today.'}</p><div class="row">${d<=today()?`<button class="btn" data-act="addSess" data-d="${d}">${ic('plus')}Add past session</button>`:''}<button class="btn" data-act="newTask" data-d="${d}">${ic('plus')}Add task</button>${d!==today()?'<button class="btn pri" data-act="dtoday">Back to Today</button>':''}</div></section>`+habitsBlock(d)+noteBlock(d);
+ else detail=`<div class="grid g3">${stat('book','Study',dur(st),'')}${stat('zap','Skills',dur(sk),'')}${stat('check','Tasks',`${ts.done}<small> / ${ts.total}</small>`,'completed')}</div>
+ ${c.dailyGoalMin&&d<=today()?`<section class="card rise" style="margin-bottom:14px"><h2 style="margin-bottom:6px">Daily goal</h2>${prog(st,c.dailyGoalMin)}<small>Measured against your current daily goal.</small></section>`:''}
+ <section class="card rise" style="margin-bottom:14px"><div class="chead"><h2>Sessions</h2>${d<=today()?`<button class="btn sm" data-act="addSess" data-d="${d}">${ic('plus')}Add</button>`:''}</div>${ss.length?`<ul class="list">${ss.map(sessItem).join('')}</ul>`:'<p class="sm-t">No sessions on this date.</p>'}</section>
+ <div class="grid g2" style="align-items:start"><div>${tasksBlock(d)}</div><div class="grid" style="margin:0">${habitsBlock(d)}${noteBlock(d)}</div></div>`;
+ return head('History','Look back at any day: sessions, tasks, habits and notes. Swipe or use ← → to change date.')+dateNav()+`<div class="grid g2" style="align-items:start">${calendar()}${heatmap()}</div><div id="swipe" style="touch-action:pan-y">${detail}</div>`+footer()}
+
+/* ---- Analytics ---- */
+function minDate(){const s=ix().sorted;return s.length?s[0]:today()}
+function periodRange(){
+ const t=today();
+ switch(AN.period){case'today':return[t,t];case'yesterday':{const y=addDays(t,-1);return[y,y]}case'7d':return[addDays(t,-6),t];case'30d':return[addDays(t,-29),t];case'week':return[weekStart(t),t];case'month':return[monthStart(t),t];
+  case'custom':return[AN.from,AN.to];default:return[minDate(),t]}}
+function prevRange(from,to){
+ const len=diff(to,from)+1;
+ if(AN.period==='all')return null;
+ if(AN.period==='week')return[addDays(from,-7),addDays(to,-7)];
+ if(AN.period==='month'){const p=parseD(from);p.setMonth(p.getMonth()-1);const pf=dstr(p),pe=dstr(new Date(p.getFullYear(),p.getMonth()+1,0));const pt=addDays(pf,len-1);return[pf,pt>pe?pe:pt]}
+ return[addDays(from,-len),addDays(from,-1)]}
+function stats(from,to){
+ const r={study:0,skill:0,sessions:0,tasksDone:0,tasksTotal:0,subj:new Map(),skl:new Map(),perDay:[]},per=new Map(),t=today();
+ for(const d of ix().sorted){
+  if(d<from)continue;if(d>to)break;
+  let st=0;for(const s of ix().sess.get(d)||[]){r.sessions++;if(s.kind==='study'){r.study+=s.activeSeconds;st+=s.activeSeconds;r.subj.set(s.refId,{name:subjName(s),secs:(r.subj.get(s.refId)?.secs||0)+s.activeSeconds})}else{r.skill+=s.activeSeconds;r.skl.set(s.refId,{name:skillName(s),secs:(r.skl.get(s.refId)?.secs||0)+s.activeSeconds})}}
+  const ts=taskStats(d);r.tasksDone+=ts.done;r.tasksTotal+=ts.total;per.set(d,{d,study:st,done:ts.done,total:ts.total})}
+ const span=diff(to,from)+1;
+ if(span<=3660){for(let d=from,i=0;i<span;i++,d=addDays(d,1))r.perDay.push(per.get(d)||{d,study:0,done:0,total:0})}
+ else r.perDay=[...per.values()];   /* very long ranges: chart only the dates that have records */
+ const elapsed=Math.max(0,Math.min(span,diff(t,from)+1));r.avg=elapsed?r.study/elapsed:null;r.elapsed=elapsed;return r}
+function bucket(perDay,key){
+ const n=perDay.length;
+ if(n<=31)return perDay.map(p=>({date:p.d,label:n<=7?fmtDate(p.d,{weekday:'short'}):p.d.slice(8),val:p[key],total:p.total,tip:fmtDate(p.d)}));
+ const m=new Map(),per=n<=183?'w':'m';
+ for(const p of perDay){const k=per==='w'?weekStart(p.d):monthStart(p.d);const o=m.get(k)||{date:k,val:0,total:0,per};o.val+=p[key];o.total+=p.total;m.set(k,o)}
+ return[...m.values()].map(o=>({...o,label:per==='w'?fmtDate(o.date,{day:'numeric',month:'short'}):fmtDate(o.date,{month:'short'}),tip:per==='w'?'Week of '+fmtDate(o.date):fmtDate(o.date,{month:'long',year:'numeric'})}))}
+function delta(cur,prev,fmt,label){
+ if(!cur&&!prev)return `<li class="item"><span class="grow">${label}</span><span class="sm-t">No data in either period</span></li>`;
+ if(!prev)return `<li class="item"><span class="grow">${label}</span><span class="chip">New — nothing in the previous period</span><b class="num">${fmt(cur)}</b></li>`;
+ const diffv=cur-prev,pct=Math.round(diffv/prev*100),cls=diffv>0?'ok':diffv<0?'warn':'';
+ return `<li class="item"><span class="grow">${label}<small>previous: ${fmt(prev)}</small></span><span class="chip ${cls}">${diffv>0?'▲':diffv<0?'▼':'＝'} ${Math.abs(pct)}%</span><b class="num">${fmt(cur)}</b></li>`}
+function vAnalytics(){
+ const t=today();
+ if(AN.period==='custom'){if(!isDate(AN.from)||!isDate(AN.to)){AN.from=addDays(t,-13);AN.to=t}}
+ const[from,to]=periodRange(),bad=from>to,r=bad?null:stats(from,to),pr=bad?null:prevRange(from,to),pv=pr?stats(pr[0],pr[1]):null;
+ const top=m=>[...m.values()].sort((a,b)=>b.secs-a.secs);
+ const sub=r?top(r.subj):[],skl=r?top(r.skl):[],cu=streak(),c=cfg();
+ const label=bad?'':`${fmtDate(from)} – ${fmtDate(to)} · ${diff(to,from)+1} day${diff(to,from)?'s':''}`;
+ let wk=[],mo=[];
+ for(let i=7;i>=0;i--){const w=addDays(weekStart(t),-7*i);wk.push({label:fmtDate(w,{day:'numeric',month:'short'}),val:sumRange(w,addDays(w,6),'study'),tip:'Week of '+fmtDate(w)+' · '+dur(sumRange(w,addDays(w,6),'study'))})}
+ for(let i=5;i>=0;i--){const b=new Date();b.setDate(1);b.setMonth(b.getMonth()-i);const f=dstr(b),e=dstr(new Date(b.getFullYear(),b.getMonth()+1,0)),v=sumRange(f,e,'study');mo.push({label:fmtDate(f,{month:'short'}),val:v,tip:fmtDate(f,{month:'long',year:'numeric'})+' · '+dur(v)})}
+ const trend=AN.trend==='weekly'?wk:mo;
+ const dayItems=r?bucket(r.perDay,'study').map(b=>({...b,tip:b.tip+' · '+dur(b.val)})):[];
+ const taskItems=r?bucket(r.perDay,'done').map(b=>({...b,tip:b.tip+' · '+b.val+' of '+b.total+' tasks completed'})):[];
+ return head('Analytics',E(label)||'Choose a valid date range',`<button class="btn" data-act="exportRangeCsv" ${bad?'disabled':''}>${ic('download')}Export CSV</button>`)+
+ `<div class="seg rise" role="group" aria-label="Reporting period">${PERIODS.map(([k,l])=>`<button data-act="period" data-k="${k}" class="${AN.period===k?'on':''}" aria-pressed="${AN.period===k}">${l}</button>`).join('')}</div>`+
+ (AN.period==='custom'?`<form class="row rise" data-form="range" style="margin:12px 0"><label class="f">From<input type="date" name="from" value="${AN.from}" required></label><label class="f">To<input type="date" name="to" value="${AN.to}" required></label><button class="btn pri" type="submit" style="align-self:flex-end">Apply</button></form>`:'')+
+ (bad?'<div class="banner err" style="margin-top:12px">The start date must be on or before the end date.</div>':`
+ <div class="grid g3" style="margin-top:14px">${stat('book','Total study time',dur(r.study),'')}${stat('zap','Total skill time',dur(r.skill),'')}${stat('check','Completed sessions',r.sessions,'')}
+ ${stat('clock','Average daily study',r.avg==null?'—':dur(r.avg),r.avg==null?'period has not started':`over ${r.elapsed} day${r.elapsed===1?'':'s'}`)}${stat('check','Tasks completed',`${r.tasksDone}<small> / ${r.tasksTotal}</small>`,'')}${stat('target','Task completion rate',r.tasksTotal?Math.round(r.tasksDone/r.tasksTotal*100)+'%':'—',r.tasksTotal?'':'no tasks in this period')}
+ ${stat('book','Most studied subject',`<span style="font-size:1.2rem">${sub[0]?E(sub[0].name):'—'}</span>`,sub[0]?dur(sub[0].secs):'no study time')}${stat('zap','Most practiced skill',`<span style="font-size:1.2rem">${skl[0]?E(skl[0].name):'—'}</span>`,skl[0]?dur(skl[0].secs):'no skill time')}${stat('trend','Current streak',`${cu} day${cu===1?'':'s'}`,c.dailyGoalMin?`days with ≥ ${dur(c.dailyGoalMin*60)} of study`:'days with any study or skill time')}</div>
+ <section class="card rise" style="margin-bottom:14px"><h2>Comparison</h2>${pv?`<p class="sm-t" style="margin-bottom:10px">vs ${AN.period==='week'?'the same days last week':AN.period==='month'?'the same days last month':'the previous equal period'} (${fmtDate(pr[0])} – ${fmtDate(pr[1])})</p><ul class="list">${delta(r.study,pv.study,dur,'Study time')}${delta(r.skill,pv.skill,dur,'Skill time')}${delta(r.sessions,pv.sessions,String,'Sessions')}${delta(r.tasksDone,pv.tasksDone,String,'Tasks completed')}</ul>`:'<p class="sm-t">No comparison is shown for “All time”.</p>'}</section>
+ <div class="grid g2"><section class="card rise"><h2>Daily study time</h2><small>${dayItems.length&&r.perDay.length>31?(r.perDay.length<=183?'Grouped by week':'Grouped by month'):'Per day'}</small>${barChart(dayItems,'Study time')}</section>
+ <section class="card rise"><div class="chead"><h2>Trend</h2><div class="seg" style="padding:0"><button data-act="trend" data-k="weekly" class="${AN.trend==='weekly'?'on':''}">Weekly</button><button data-act="trend" data-k="monthly" class="${AN.trend==='monthly'?'on':''}">Monthly</button></div></div><small>${AN.trend==='weekly'?'Last 8 weeks':'Last 6 months'} · study time</small>${barChart(trend,'Study time trend')}</section>
+ <section class="card rise"><h2>Time per subject</h2>${hbars(sub,'No study time in this period.')}</section>
+ <section class="card rise"><h2>Time per skill</h2>${hbars(skl,'No skill time in this period.')}</section>
+ <section class="card rise"><h2>Task completion</h2><small>Completed tasks ${r.perDay.length>31?'(grouped)':'per day'}</small>${barChart(taskItems,'Completed tasks')}</section></div>`)+footer()}
+
+/* ---- Settings ---- */
+function vSettings(){
+ const c=cfg(),g=v=>v==null?'':v;
+ return head('Settings','Everything stays on this device unless you export it')+
+ `<div class="grid g2" style="align-items:start"><section class="card rise"><h2>Profile & goals</h2><form class="form" data-form="settings">
+ <label class="f">Display name (optional)<input name="displayName" maxlength="40" value="${E(c.displayName)}" autocomplete="off"></label>
+ <div class="fgrid"><label class="f">Daily study goal (min)<input name="dailyGoalMin" type="number" min="0" max="1440" step="5" inputmode="numeric" value="${g(c.dailyGoalMin)}" placeholder="None"></label>
+ <label class="f">Weekly study goal (min)<input name="weeklyGoalMin" type="number" min="0" max="10080" step="5" inputmode="numeric" value="${g(c.weeklyGoalMin)}" placeholder="None"></label>
+ <label class="f">Daily skill goal (min)<input name="skillDailyGoalMin" type="number" min="0" max="1440" step="5" inputmode="numeric" value="${g(c.skillDailyGoalMin)}" placeholder="None"></label></div>
+ <small>Leave a goal empty for no goal. Changing goals never changes saved sessions.</small>
+ <div class="fgrid"><label class="f">Timer display<select name="timerFormat"><option value="hms" ${c.timerFormat==='hms'?'selected':''}>HH:MM:SS</option><option value="compact" ${c.timerFormat==='compact'?'selected':''}>1h 05m 09s</option></select></label>
+ <label class="f">Pomodoro focus (min)<input name="pomoWork" type="number" min="1" max="180" value="${c.pomoWork}" inputmode="numeric"></label>
+ <label class="f">Suggested break (min)<input name="pomoBreak" type="number" min="1" max="60" value="${c.pomoBreak}" inputmode="numeric"></label></div>
+ <div class="df"><button class="btn pri" type="submit">Save settings</button></div></form></section>
+ <section class="card rise"><h2>Backup & restore</h2><p class="sm-t" style="margin-bottom:12px">Your records live only in this browser. They are not synced to other devices and can be lost if browser data is cleared or the device is lost. Export a backup regularly.</p>
+ <p class="sm-t" style="margin-bottom:10px">Last backup: ${(()=>{const l=S.meta.get('backup')?.lastAt;return l&&!isNaN(Date.parse(l))?E(new Date(l).toLocaleString()):'never'})()}</p>
+ <div class="row"><button class="btn pri" data-act="exportJson">${ic('download')}Backup (JSON)</button><button class="btn" data-act="exportAllCsv">${ic('download')}All records (CSV)</button><button class="btn" data-act="importPick">${ic('upload')}Restore backup</button><input type="file" id="importFile" accept="application/json,.json" hidden></div>
+ <p class="sm-t" style="margin-top:12px">A running timer is not included in backups. Restoring asks whether to <b>merge</b> (add records that are not already here) or <b>replace</b> (erase everything first). Nothing changes until you confirm.</p></section>
+ <section class="card rise"><h2>Privacy</h2><ul class="priv"><li>No accounts, no cloud sync, no analytics, no trackers and no third-party scripts.</li><li>Your records are stored in this browser's IndexedDB. Nothing is sent anywhere — this page blocks network requests entirely.</li><li>Only what you type is stored. A display name is optional; no location, contacts or identifiers are requested.</li><li>No browser permissions are requested.</li><li><b>Not encrypted:</b> browser storage is not the same as an encrypted vault. Anyone who can use this browser profile on this device can open the data. Do not store anything you would not want them to see.</li></ul></section>
+ <section class="card rise"><h2>About & creator</h2><p>Vistraker — Track Your Time. See Your Growth.</p><p class="sm-t" style="margin:6px 0 14px">Created and owned by <b style="color:var(--v2)">Vismay NK</b> · Version ${VERSION}</p>${ghBtn()}</section>
+ <section class="card rise" style="border-color:rgba(251,113,133,.35)"><h2>Clear application data</h2><p class="sm-t" style="margin-bottom:12px">Deletes every subject, session, skill, task, habit, note, goal and setting on this device. This cannot be undone.</p><button class="btn danger" data-act="clearAll">${ic('trash')}Clear all data…</button></section></div>`+footer()}
+
+
+/* ---- Stopwatch (standalone; not saved as a study record) ---- */
+const swState=()=>S.meta.get('stopwatch')||{base:0,startedAt:null};
+const swMs=(s=swState(),now=Date.now())=>Math.max(0,s.base+(s.startedAt?Math.max(0,now-s.startedAt):0));
+const swText=ms=>{const t=Math.floor(ms/1000),h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')};
+function vStopwatch(){
+ const s=swState(),run=!!s.startedAt,ms=swMs(s);
+ return head('Stopwatch','A simple stopwatch. It is separate from your study records.')+
+ `<section class="card rise" style="text-align:center;max-width:520px;margin:0 auto"><div class="num" data-clock="sw" role="timer" aria-label="Stopwatch" style="font-size:clamp(2.6rem,14vw,4.5rem);font-weight:700;letter-spacing:.02em;margin:18px 0">${swText(ms)}</div>
+ <div class="row" style="justify-content:center;gap:12px;margin-bottom:8px">${run?`<button class="btn danger lg" data-act="swStop">${ic('pause')}Stop</button>`:`<button class="btn pri lg" data-act="swStart">${ic('play')}${ms>0?'Resume':'Start'}</button>`}<button class="btn lg" data-act="swReset" ${ms>0?'':'disabled'}>Reset</button></div>
+ ${!run&&ms>=60000?`<div class="row" style="justify-content:center;margin:6px 0 10px"><button class="btn" data-act="swSave">${ic('check')}Save as study or skill session</button></div>`:''}
+ <small>${run?'Running':ms>0?'Stopped':'Ready'}</small></section>`+footer()}
+
+const VIEWS={stopwatch:vStopwatch,dashboard:vDashboard,study:vStudy,skills:vSkills,daily:vDaily,history:vHistory,analytics:vAnalytics,settings:vSettings};
+
+/* ============ Dialogs, actions, import/export, app boot ============ */
+const BASE_TITLE=document.title;
+const dlg=$('#dlg'),cfm=$('#cfm');
+/* Messages are also shown INSIDE an open dialog, because a modal dialog sits above the floating toast and would hide it. */
+function toast(msg,type=''){
+ if(!storageOK&&type==='ok'&&!/downloaded|started|Backup/.test(msg))msg+=' — kept in memory only. This browser cannot store data, so export a backup before closing.';
+ const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>{t.remove()},type==='err'?6000:3500);
+ const host=cfm.open?cfm:dlg.open?dlg:null,body=host&&$('.db',host);
+ if(body){$$('.formerr',body).forEach(x=>x.remove());const b=document.createElement('div');b.className='banner formerr '+(type==='err'?'err':'info');b.setAttribute('role',type==='err'?'alert':'status');b.textContent=msg;body.prepend(b);body.scrollTop=0;setTimeout(()=>b.remove(),type==='err'?8000:4000)}}
+function openDlg(title,body){clearTimeout(dlg._ct);dlg.innerHTML=`<div class="dh"><h2 id="dlgTitle">${E(title)}</h2><button class="icon-btn sm" data-act="closeDlg" aria-label="Close">${ic('x')}</button></div><div class="db in">${body}</div>`;if(!dlg.open)dlg.showModal();dlg.classList.remove('closing')}
+function closeDlg(d=dlg){if(!d.open)return;d.classList.add('closing');clearTimeout(d._ct);const tok=d._tok=(d._tok||0)+1;   /* a stale timer from an earlier close can never close a dialog that was reopened */
+ d._ct=setTimeout(()=>{if(d._tok!==tok)return;d.classList.remove('closing');if(d.open)d.close()},reduce()?0:160)}
+function confirmDlg({title,body,ok='Delete',danger=true}){return new Promise(res=>{
+ if(cfm.open){res(false);return}
+ /* title/ok/body are plain text: body is inserted with textContent, so names typed by the user (or imported) can never become markup. */
+ cfm.innerHTML=`<div class="dh"><h2 id="cfmTitle"></h2></div><div class="db"><div class="pre" style="color:var(--tx2)"></div><div class="df" style="margin-top:16px"><button class="btn" data-act="cfmNo">Cancel</button><button class="btn" data-act="cfmYes"></button></div></div>`;
+ $('#cfmTitle',cfm).textContent=String(title);$('.pre',cfm).textContent=String(body);
+ const yes=$('[data-act=cfmYes]',cfm);yes.textContent=String(ok);yes.classList.add(danger?'danger':'pri');
+ clearTimeout(cfm._ct);cfm._res=res;cfm.classList.remove('closing');cfm.showModal()})}
+cfm.addEventListener('close',()=>{if(cfm._res){cfm._res(false);cfm._res=null}});
+for(const d of[dlg,cfm])d.addEventListener('click',e=>{if(e.target===d)closeDlg(d)});
+
+class UserErr extends Error{}
+async function run(fn){try{await fn()}catch(e){
+ if(e instanceof UserErr)toast(e.message,'err');
+ else{console.error(e);toast(e&&e.name==='QuotaExceededError'?'Your browser storage is full, so nothing was saved. Export a backup and free up space.':'Something went wrong and your changes were not saved. Please try again.','err')}}}
+const nowISO=()=>new Date().toISOString();
+const clampInt=(v,lo,hi)=>{const n=Number(v);return Number.isFinite(n)?Math.min(hi,Math.max(lo,Math.round(n))):null};
+
+/* ---- rendering ---- */
+let lastRoute='',lastDate='';
+/* Keeps the address bar in step with the page. Some embedded/sandboxed viewers forbid history changes (SecurityError); the app works without them, so ignore that failure. */
+function setHash(h){try{history.replaceState(null,'',h)}catch(e){}}
+function parseHash(){const m=location.hash.replace(/^#\/?/,'').split('/');return{name:ROUTES.includes(m[0])?m[0]:'dashboard',date:isDate(m[1])?m[1]:null}}
+function updateNav(){
+ $$('.side nav a').forEach(a=>{const on=a.dataset.r===route;a.classList.toggle('on',on);on?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+ const idx={dashboard:0,study:1,skills:2,daily:3}[route]??4;
+ $$('.bnav [data-r]').forEach((a,i)=>{a.classList.toggle('on',i===idx);i===idx&&a.tagName==='A'?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current')});
+ $('.bnav .ind').style.transform=`translateX(${idx*100}%)`}
+function snapshotUI(){
+ const v=$('#view'),f=document.activeElement,s={fk:null,drafts:[]};
+ if(f&&v.contains(f)&&f!==v)s.fk={act:f.dataset.act,id:f.dataset.id,d:f.dataset.d,k:f.dataset.k,name:f.name||'',form:f.closest('[data-form]')?.dataset.form||''};
+ $$('form[data-form] textarea, form[data-form] input:not([type=checkbox]):not([type=radio]):not([type=file])',v).forEach(el=>{if(el.value!==el.defaultValue&&!el.form.dataset.busy)s.drafts.push({form:el.form.dataset.form,key:el.form.dataset.d||el.form.dataset.id||'',name:el.name,value:el.value})});
+ return s}
+function restoreUI(s){
+ const v=$('#view');
+ for(const dr of s.drafts){const f=$$('form[data-form]',v).find(f=>f.dataset.form===dr.form&&(f.dataset.d||f.dataset.id||'')===dr.key),el=f&&f.elements[dr.name];if(el&&el.value===el.defaultValue)el.value=dr.value}
+ if(s.fk){const q=$$('*',v).find(e=>e.dataset.act===s.fk.act&&e.dataset.id===s.fk.id&&e.dataset.d===s.fk.d&&e.dataset.k===s.fk.k&&(e.name||'')===s.fk.name&&(e.closest('[data-form]')?.dataset.form||'')===s.fk.form);if(q)q.focus({preventScroll:true})}}
+function render(mode='nav'){
+ const r=parseHash(),snap=mode==='data'?snapshotUI():null;
+ if(mode==='nav'){const want='#/'+r.name+(r.date?'/'+r.date:'');if(location.hash&&location.hash!==want)setHash(want)}
+ if(mode==='nav'){const changed=r.name!==lastRoute;route=r.name;if(r.date)selDate=r.date;else if(changed&&(route==='history'||route==='daily'))selDate=today();if(changed||r.date){calMonth=null}}
+ const v=$('#view'),keepY=window.scrollY;
+ v.classList.remove('in');v.classList.toggle('static',mode!=='nav');
+ v.innerHTML=VIEWS[route]();
+ if(mode==='date')$('#swipe')?.classList.add('fadeit');
+ updateNav();
+ const h=$('#heat');if(h)h.scrollLeft=h.scrollWidth;
+ if(mode==='nav'){$$('.rise',v).forEach((el,i)=>el.style.setProperty('--i',Math.min(i,9)));if(lastRoute!==route||!lastRoute)window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>{v.classList.add('in');runCounters()}))}
+ else{v.classList.add('in');if(mode==='data')window.scrollTo(0,keepY)}
+ lastRoute=route;
+ $('#pagetitle').textContent=TITLES[route]; if(!getActive())document.title=TITLES[route]+' · Vistraker';
+ if(snap)restoreUI(snap);
+ if(mode==='nav')$('#announce').textContent=TITLES[route]+' page'}
+function runCounters(){
+ if(reduce())return;
+ const fmt=(v,f)=>f==='dur'?dur(v):f==='pct'?Math.round(v)+'%':String(Math.round(v));
+ $$('.count').forEach(el=>{const v=+el.dataset.v,f=el.dataset.f;if(!v)return;const t0=performance.now(),D=650;
+  const step=t=>{const p=Math.min(1,(t-t0)/D),e=1-Math.pow(1-p,3);el.textContent=fmt(v*e,f);if(p<1)requestAnimationFrame(step);else el.textContent=fmt(v,f)};
+  requestAnimationFrame(step);setTimeout(()=>{el.textContent=fmt(v,f)},D+300)})}
+function setDate(d){if(!isDate(d))return;selDate=d;calMonth=null;setHash('#/'+route+'/'+d);render('date')}
+
+/* ---- live timer ticking (reads timestamps; never trusts a counter) ---- */
+const pomoSeen=new Map(),breakSeen=new Map();let lastToday=today();
+function tick(){
+ const a=getActive();
+ if(route==='dashboard')rulerLive();
+ if(route==='stopwatch'||route==='dashboard'){const x=swText(swMs());$$('[data-clock=sw]').forEach(el=>{if(el.textContent!==x)el.textContent=x})}
+ if(today()!==lastToday){lastToday=today();render('data')}
+ if(!a){if(document.title.startsWith('⏱'))document.title=BASE_TITLE;return}
+ const tx=clockTexts(a);
+ $$('[data-clock=main]').forEach(el=>{if(el.textContent!==tx.main)el.textContent=tx.main});
+ $$('[data-clock=sub]').forEach(el=>{if(el.textContent!==tx.sub)el.textContent=tx.sub});
+ document.title=`⏱ ${tx.main} · Vistraker`;
+ if(a.pomo&&!isPaused(a)){const c=cfg(),b=Math.floor(activeSecs(a)/(c.pomoWork*60)),seen=pomoSeen.get(a.sessionId)??b;
+  if(b>seen){toast(`Focus block complete! Pause for a ${c.pomoBreak}-minute break, or keep going.`,'ok');try{navigator.vibrate&&navigator.vibrate(200)}catch{}}
+  pomoSeen.set(a.sessionId,b)}
+ if(a.pomo&&a.breakAt&&isPaused(a)){const key=a.sessionId+a.breakAt,over=Date.now()-a.breakAt>=cfg().pomoBreak*60000;
+  if(!breakSeen.has(key))breakSeen.set(key,over?'over':'pending');
+  else if(breakSeen.get(key)==='pending'&&over){breakSeen.set(key,'over');toast('Break is over. Resume when you are ready.','ok');try{navigator.vibrate&&navigator.vibrate(200)}catch{}}}}
+const contentSig=()=>JSON.stringify([...ALL_STORES.map(n=>[...S[n].values()])]);   /* full content, so an edit made in another tab is noticed even when counts are unchanged */
+async function syncFromDB(){
+ if(!db)return;const before=contentSig();
+ await loadAll();dirty++;if(contentSig()!==before)render('data')}
+
+/* ---- csv / json export ---- */
+const csvCell=v=>{let s=String(v??'');if(/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s};
+function csvRows(from,to){
+ const rows=[['date','record_type','subject_or_skill','chapter','activity','start_time','end_time','duration_minutes','status','notes']],I=ix();
+ for(let d=from,n=0;d<=to&&n<8000;d=addDays(d,1),n++){
+  for(const s of(I.sess.get(d)||[]).slice().sort((a,b)=>a.startedAt.localeCompare(b.startedAt)))rows.push([d,s.kind==='study'?'Study session':'Skill session',refName(s),chapName(s),s.title,s.timeKnown===false?'':hhmm(s.startedAt),s.timeKnown===false?'':hhmm(s.endedAt),(s.activeSeconds/60).toFixed(2),s.source==='manual'?'completed (manual entry)':'completed',s.notes]);
+  for(const t of I.tasks.get(d)||[])rows.push([d,'Task',t.category,'',t.title,'','',t.actualMin??'',t.completed?'completed':'open',t.description]);
+  for(const h of I.hl.get(d)||[])rows.push([d,'Habit',S.habits.get(h.habitId)?.name||'Habit','','','','','','completed','']);
+  const nt=I.notes.get(d);if(nt)rows.push([d,'Daily note','','','','','','','',nt.content])}
+ return rows.map(r=>r.map(csvCell).join(',')).join('\r\n')}
+function download(name,text,type){const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}
+function backupObj(){const data={};for(const n of DATA_STORES)data[n]=list(n);const s=S.meta.get('settings');return{format:'vistraker-backup',version:1,appVersion:VERSION,exportedAt:nowISO(),settings:s?{...s}:null,data}}
+
+/* ---- import validation (whitelists fields; any bad record rejects the whole file) ---- */
+const need=c=>{if(!c)throw new Error('bad')};
+const vStr=(v,max,req)=>{if(v==null)v='';need(typeof v==='string'&&v.length<=max&&(!req||v.trim()));return v};
+const vNum=(v,lo,hi,opt)=>{if(v==null&&opt)return null;need(typeof v==='number'&&isFinite(v)&&v>=lo&&v<=hi);return v};
+const vIso=(v,opt)=>{if(v==null&&opt)return null;need(typeof v==='string'&&v.length<=40&&!isNaN(Date.parse(v)));return v};
+const vDate=v=>{need(isDate(v));return v};
+const vIn=(v,a)=>{need(a.includes(v));return v};
+const vBool=v=>{need(typeof v==='boolean');return v};
+const vId=v=>{vStr(v,120,true);need(/^[A-Za-z0-9_.:|-]+$/.test(v));return v};   /* ids are only ever letters, digits and _ . : | - */
+const CLEAN={
+ subjects:r=>({id:vId(r.id),name:vStr(r.name,200,true),description:vStr(r.description,2000),color:/^#[0-9a-fA-F]{6}$/.test(r.color||'')?r.color:COLORS[0],createdAt:vIso(r.createdAt),archivedAt:vIso(r.archivedAt,true)}),
+ chapters:r=>({id:vId(r.id),subjectId:vId(r.subjectId),name:vStr(r.name,200,true),description:vStr(r.description,2000),status:vIn(r.status,STATUS),notes:vStr(r.notes,5000),createdAt:vIso(r.createdAt),completedAt:vIso(r.completedAt,true)}),
+ sessions:r=>({id:vId(r.id),kind:vIn(r.kind,['study','skill']),refId:vId(r.refId),refName:vStr(r.refName,200),chapterId:r.chapterId==null?null:vId(r.chapterId),chapterName:vStr(r.chapterName,200),title:vStr(r.title,200),startedAt:vIso(r.startedAt),endedAt:vIso(r.endedAt),activeSeconds:vNum(r.activeSeconds,0,86400),status:'completed',notes:vStr(r.notes,5000),source:vIn(r.source,['timer','manual','pomodoro']),localDate:vDate(r.localDate),timeKnown:r.timeKnown==null?true:vBool(r.timeKnown)}),
+ skills:r=>({id:vId(r.id),name:vStr(r.name,200,true),category:vStr(r.category,100),description:vStr(r.description,2000),currentLevel:vIn(r.currentLevel,LEVELS),targetLevel:vIn(r.targetLevel,LEVELS),goalMin:vNum(r.goalMin,1,10080,true),notes:vStr(r.notes,5000),createdAt:vIso(r.createdAt),archivedAt:vIso(r.archivedAt,true)}),
+ tasks:r=>({id:vId(r.id),...(r.tick===true?{tick:true,subjectId:vId(r.subjectId)}:{}),title:vStr(r.title,200,true),description:vStr(r.description,2000),localDate:vDate(r.localDate),category:vStr(r.category,100),priority:vIn(r.priority,PRIO),plannedMin:vNum(r.plannedMin,0,1440,true),actualMin:vNum(r.actualMin,0,1440,true),completed:vBool(r.completed),completedAt:vIso(r.completedAt,true),createdAt:vIso(r.createdAt)}),
+ habits:r=>({id:vId(r.id),name:vStr(r.name,200,true),createdDate:vDate(r.createdDate),archivedAt:vIso(r.archivedAt,true)}),
+ habitLogs:r=>({id:vId(r.id),habitId:vId(r.habitId),localDate:vDate(r.localDate)}),
+ notes:r=>({id:vId(r.id),localDate:vDate(r.localDate),content:vStr(r.content,5000),updatedAt:vIso(r.updatedAt)}),
+ goals:r=>({id:vId(r.id),type:vIn(r.type,['subjectWeekly']),refId:vId(r.refId),minutes:vNum(r.minutes,1,10080)})};
+function cleanSettings(s){if(s==null)return null;need(typeof s==='object');return{id:'settings',displayName:vStr(s.displayName,40),dailyGoalMin:vNum(s.dailyGoalMin,1,1440,true),weeklyGoalMin:vNum(s.weeklyGoalMin,1,10080,true),skillDailyGoalMin:vNum(s.skillDailyGoalMin,1,1440,true),timerFormat:vIn(s.timerFormat===undefined?DEF.timerFormat:s.timerFormat,['hms','compact']),pomoWork:vNum(s.pomoWork===undefined?DEF.pomoWork:s.pomoWork,1,180),pomoBreak:vNum(s.pomoBreak===undefined?DEF.pomoBreak:s.pomoBreak,1,60)}}
+function validateBackup(text){
+ let o;try{o=JSON.parse(text)}catch{throw new UserErr('That file is not valid JSON, so nothing was imported.')}
+ if(!o||typeof o!=='object'||o.format!=='vistraker-backup'||!o.data||typeof o.data!=='object'||Array.isArray(o.data))throw new UserErr('This is not a Vistraker backup file. Nothing was imported.');
+ if(!Number.isInteger(o.version)||o.version<1)throw new UserErr('This backup has no valid version number, so nothing was imported.');
+ if(o.version>1)throw new UserErr('This backup comes from a newer version of Vistraker. Nothing was imported.');
+ if(!('settings' in o))throw new UserErr('The backup is incomplete (settings are missing), so nothing was imported. Your current data is unchanged.');
+ const missing=DATA_STORES.filter(n=>!Array.isArray(o.data[n]));
+ if(missing.length)throw new UserErr('The backup is incomplete or damaged ('+missing.join(', ')+(missing.length>1?' are':' is')+' missing or not a list), so nothing was imported. Your current data is unchanged.');
+ const out={},counts={};
+ try{for(const n of DATA_STORES){const arr=o.data[n];need(arr.length<=200000);const seen=new Set();out[n]=arr.map(r=>{need(r&&typeof r==='object');const c=CLEAN[n](r);need(!seen.has(c.id));seen.add(c.id);return c});counts[n]=out[n].length}
+  out.settings=cleanSettings(o.settings)}
+ catch{throw new UserErr('The backup contains invalid or damaged records, so nothing was imported. Your current data is unchanged.')}
+ return{data:out,counts,exportedAt:o.exportedAt}}
+let pendingImport=null;
+function orphanWarning(d){
+ const subj=new Set([...d.subjects.map(x=>x.id),...S.subjects.keys()]),hab=new Set([...d.habits.map(x=>x.id),...S.habits.keys()]);
+ const a=d.chapters.filter(c=>!subj.has(c.subjectId)).length,b=d.habitLogs.filter(h=>!hab.has(h.habitId)).length,g=d.goals.filter(x=>!subj.has(x.refId)).length;
+ return a||b||g?`Heads-up: ${[a&&a+' chapter(s) belong to subjects that do not exist',b&&b+' habit check-off(s) belong to missing habits',g&&g+' goal(s) belong to missing subjects'].filter(Boolean).join(', ')}. They will be imported but will not appear in the app.`:''}
+async function applyImport(mode){
+ const{data}=pendingImport;const ops=[];
+ if(mode==='replace'){for(const n of ALL_STORES)ops.push({s:n,op:'clear'});for(const n of DATA_STORES)for(const r of data[n])ops.push({s:n,op:'put',r});if(data.settings)ops.push({s:'meta',op:'put',r:data.settings});ops.push({s:'meta',op:'put',r:{id:'backup',lastAt:nowISO(),snoozeUntil:0}})}   /* the data now equals a backup file */
+ else for(const n of DATA_STORES)for(const r of data[n])if(!S[n].has(r.id))ops.push({s:n,op:'put',r});
+ if(ops.length)await commit(ops);
+ pendingImport=null;closeDlg();render('data');
+ toast(mode==='replace'?'Backup restored. Previous data was replaced.':`Backup merged. ${ops.length} new record${ops.length===1?'':'s'} added.`,'ok')}
+
+/* ---- dialogs: subjects, chapters, skills ---- */
+const swatches=sel=>`<div class="row" role="radiogroup" aria-label="Colour">${COLORS.map(c=>`<label style="cursor:pointer"><input type="radio" name="color" value="${c}" ${c===sel?'checked':''} class="sr"><span class="dot" style="--c:${c};width:28px;height:28px;display:block" data-sw></span></label>`).join('')}</div>`;
+function showSubjectForm(id){
+ const s=id?S.subjects.get(id):null;
+ openDlg(s?'Edit subject':'New subject',`<form class="form" data-form="subject" data-id="${E(id||'')}"><label class="f">Name<input name="name" required maxlength="80" value="${E(s?.name||'')}"></label><label class="f">Description (optional)<textarea name="description" maxlength="500">${E(s?.description||'')}</textarea></label><div class="f">Colour${swatches(s?.color||COLORS[S.subjects.size%COLORS.length])}</div><div class="df"><button class="btn" type="button" data-act="${s?'subjDetail':'closeDlg'}" data-id="${E(id||'')}">Cancel</button><button class="btn pri" type="submit">Save</button></div></form>`)}
+function showSubject(id){
+ const s=S.subjects.get(id);if(!s){closeDlg();return}
+ const o=totalsBy('study').get(id)||{secs:0,n:0},ct=chapTotals(),t=today(),chs=list('chapters').filter(c=>c.subjectId===id).sort((a,b)=>a.createdAt.localeCompare(b.createdAt)),done=chs.filter(c=>c.status==='Completed').length;
+ const days=[...Array(14)].map((_,i)=>addDays(t,i-13)).map(d=>{let v=0;for(const x of ix().sess.get(d)||[])if(x.kind==='study'&&x.refId===id)v+=x.activeSeconds;return{label:d.slice(8),val:v,tip:fmtDate(d)+' · '+dur(v)}});
+ const rec=list('sessions').filter(x=>x.kind==='study'&&x.refId===id).sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).slice(0,5),g=S.goals.get('sg-'+id);
+ openDlg(s.name,`<div class="row" style="margin-bottom:12px"><span class="chip">${dur(o.secs)} total</span><span class="chip">${o.n} session${o.n===1?'':'s'}</span><span class="chip">${done}/${chs.length} chapters done</span>${s.archivedAt?'<span class="chip warn">Archived</span>':''}</div>${s.description?`<p class="sm-t pre" style="margin-bottom:12px">${E(s.description)}</p>`:''}
+ <div class="row" style="margin-bottom:14px"><button class="btn sm" data-act="editSubject" data-id="${E(id)}">${ic('edit')}Edit</button><button class="btn sm" data-act="archiveSubject" data-id="${E(id)}">${ic('archive')}${s.archivedAt?'Unarchive':'Archive'}</button><button class="btn sm danger" data-act="deleteSubject" data-id="${E(id)}">${ic('trash')}Delete</button></div>
+ <h3 style="margin-bottom:4px">Last 14 days</h3>${barChart(days,'Study time for this subject in the last 14 days')}
+ <form class="row" data-form="subjGoal" data-id="${E(id)}" style="margin:12px 0;flex-wrap:nowrap"><label class="f grow">Weekly goal for this subject (min, optional)<input name="minutes" type="number" min="0" max="10080" step="5" inputmode="numeric" value="${g?g.minutes:''}" placeholder="None"></label><button class="btn" type="submit" style="align-self:flex-end">Set</button></form>
+ <h3 style="margin:16px 0 8px">Chapters</h3>${chs.length?`<ul class="list">${chs.map(c=>{const x=ct.get(c.id);return `<li class="item"><div class="grow"><b>${E(c.name)}</b><small>${x?dur(x.secs)+' · '+x.n+' session'+(x.n===1?'':'s'):'No time recorded'}${c.completedAt?' · completed '+fmtDate(dstr(new Date(c.completedAt))):''}</small></div><select data-change="chapStatus" data-id="${E(c.id)}" aria-label="Status of ${E(c.name)}" style="width:auto;min-height:38px">${STATUS.map(x=>`<option ${x===c.status?'selected':''}>${x}</option>`).join('')}</select><button class="icon-btn sm" data-act="editChapter" data-id="${E(c.id)}" aria-label="Edit chapter">${ic('edit')}</button><button class="icon-btn sm" data-act="delChapter" data-id="${E(c.id)}" aria-label="Delete chapter">${ic('trash')}</button></li>`}).join('')}</ul>`:'<p class="sm-t">No chapters yet.</p>'}
+ <form class="row" data-form="addChap" data-id="${E(id)}" style="margin-top:10px;flex-wrap:nowrap"><input name="name" placeholder="New chapter or topic" maxlength="120" required aria-label="New chapter name"><button class="btn pri" type="submit">Add</button></form>
+ <h3 style="margin:16px 0 8px">Recent sessions</h3>${rec.length?`<ul class="list">${rec.map(sessItem).join('')}</ul>`:'<p class="sm-t">No sessions yet.</p>'}`)}
+function showChapterForm(id){
+ const c=S.chapters.get(id);if(!c)return;
+ openDlg('Edit chapter',`<form class="form" data-form="chapter" data-id="${E(id)}"><label class="f">Name<input name="name" required maxlength="120" value="${E(c.name)}"></label><label class="f">Description<textarea name="description" maxlength="1000">${E(c.description)}</textarea></label><label class="f">Notes<textarea name="notes" maxlength="2000">${E(c.notes)}</textarea></label><div class="df"><button class="btn" type="button" data-act="subjDetail" data-id="${c.subjectId}">Cancel</button><button class="btn pri" type="submit">Save</button></div></form>`)}
+function showSkillForm(id,name=''){
+ const s=id?S.skills.get(id):null,cats=['AI','Creative','Coding','Language','Research','Writing','Other'];
+ openDlg(s?'Edit skill':'New skill',`<form class="form" data-form="skill" data-id="${E(id||'')}"><label class="f">Name<input name="name" required maxlength="80" value="${E(s?.name||name)}"></label><div class="fgrid"><label class="f">Category<input name="category" list="cats" maxlength="60" value="${E(s?.category||'')}" placeholder="e.g. Creative"><datalist id="cats">${cats.map(c=>`<option value="${c}">`).join('')}</datalist></label><label class="f">Weekly time goal (min)<input name="goalMin" type="number" min="0" max="10080" step="5" inputmode="numeric" value="${s?.goalMin||''}" placeholder="None"></label></div>
+ <div class="fgrid"><label class="f">Current level (self-assessed)<select name="currentLevel">${LEVELS.map(l=>`<option ${l===(s?.currentLevel||'Beginner')?'selected':''}>${l}</option>`).join('')}</select></label><label class="f">Target level<select name="targetLevel">${LEVELS.map(l=>`<option ${l===(s?.targetLevel||'Intermediate')?'selected':''}>${l}</option>`).join('')}</select></label></div>
+ <label class="f">Description (optional)<textarea name="description" maxlength="1000">${E(s?.description||'')}</textarea></label><label class="f">Notes (optional)<textarea name="notes" maxlength="3000">${E(s?.notes||'')}</textarea></label>
+ <div class="df"><button class="btn" type="button" data-act="${s?'skillDetail':'closeDlg'}" data-id="${E(id||'')}">Cancel</button><button class="btn pri" type="submit">Save</button></div></form>`)}
+function showSkill(id){
+ const s=S.skills.get(id);if(!s){closeDlg();return}
+ const o=totalsBy('skill').get(id)||{secs:0,n:0},rec=list('sessions').filter(x=>x.kind==='skill'&&x.refId===id).sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).slice(0,5);
+ openDlg(s.name,`<div class="row" style="margin-bottom:12px"><span class="chip">${dur(o.secs)} total</span><span class="chip">${o.n} session${o.n===1?'':'s'}</span><span class="chip">${E(s.category||'Uncategorised')}</span>${s.archivedAt?'<span class="chip warn">Archived</span>':''}</div><div>${pips(s.currentLevel,s.targetLevel)}<small style="display:block;margin-top:4px">${E(s.currentLevel)} → ${E(s.targetLevel)} · self-assessed; Vistraker does not measure expertise.</small></div>${s.description?`<p class="sm-t pre" style="margin-top:12px">${E(s.description)}</p>`:''}${s.notes?`<h3 style="margin-top:12px">Notes</h3><p class="sm-t pre">${E(s.notes)}</p>`:''}
+ <div class="row" style="margin:14px 0"><button class="btn sm" data-act="editSkill" data-id="${E(id)}">${ic('edit')}Edit</button><button class="btn sm" data-act="archiveSkill" data-id="${E(id)}">${ic('archive')}${s.archivedAt?'Unarchive':'Archive'}</button><button class="btn sm danger" data-act="deleteSkill" data-id="${E(id)}">${ic('trash')}Delete</button></div>
+ <h3 style="margin-bottom:8px">Recent sessions</h3>${rec.length?`<ul class="list">${rec.map(sessItem).join('')}</ul>`:'<p class="sm-t">No sessions yet.</p>'}`)}
+
+/* ---- dialogs: tasks, habits, sessions ---- */
+function showTaskForm(id,date,cat=''){
+ const t=id?S.tasks.get(id):null,d=t?.localDate||date||selDate,isG=(t?.category||cat)==='Goal';
+ openDlg(t?(isG?'Edit goal':'Edit task'):(cat==='Goal'?'New goal':'New task'),`<form class="form" data-form="task" data-id="${E(id||'')}"><label class="f">Title<input name="title" required maxlength="200" value="${E(t?.title||'')}"></label><label class="f">Description (optional)<textarea name="description" maxlength="1000">${E(t?.description||'')}</textarea></label>
+ <div class="fgrid"><label class="f">Date<input type="date" name="date" required value="${d}"></label><label class="f">Priority<select name="priority">${PRIO.map(p=>`<option ${p===(t?.priority||'Normal')?'selected':''}>${p}</option>`).join('')}</select></label><label class="f">Category<input name="category" maxlength="60" value="${E(t?.category||cat)}" placeholder="e.g. Homework"></label></div>
+ <div class="fgrid"><label class="f">Planned (min)<input name="plannedMin" type="number" min="0" max="1440" inputmode="numeric" value="${t?.plannedMin??''}"></label><label class="f">Actual (min)<input name="actualMin" type="number" min="0" max="1440" inputmode="numeric" value="${t?.actualMin??''}"></label></div>
+ <div class="df"><button class="btn" type="button" data-act="closeDlg">Cancel</button><button class="btn pri" type="submit">Save</button></div></form>`)}
+function showHabitForm(){openDlg('New habit',`<form class="form" data-form="habit"><label class="f">Habit name<input name="name" required maxlength="100" placeholder="e.g. Read for 20 minutes"></label><label class="f">Tracking starts<input type="date" name="start" value="${today()}" required></label><p class="sm-t">Each date is checked off separately. Nothing is ever marked complete automatically.</p><div class="df"><button class="btn" type="button" data-act="closeDlg">Cancel</button><button class="btn pri" type="submit">Add habit</button></div></form>`)}
+function sessRefOpts(kind,cur,curName){
+ const items=(kind==='study'?list('subjects'):list('skills')).filter(x=>!x.archivedAt||x.id===cur).sort(byName);
+ let o=items.map(x=>`<option value="${E(x.id)}" ${x.id===cur?'selected':''}>${E(x.name)}${x.archivedAt?' (archived)':''}</option>`).join('');
+ if(cur&&!items.some(x=>x.id===cur))o+=`<option value="${E(cur)}" selected>${E(curName||'Deleted')} (deleted)</option>`;return o}
+function readSess(f){const fd=new FormData(f);return{id:f.dataset.id||'',source:f.dataset.source||'',orig:+f.dataset.orig||0,kind:fd.get('kind')||f.dataset.kind,ref:fd.get('ref')||'',refName:f.dataset.refname||'',chapter:fd.get('chapter')||'',date:fd.get('date')||f.dataset.date,start:fd.get('start')||'',end:fd.get('end')||'',h:fd.get('h')||'',m:fd.get('m')||'',title:fd.get('title')||'',notes:fd.get('notes')||'',startedAt:f.dataset.started||''}}
+function showSessForm(p){
+ const ed=!!p.id,timer=ed&&p.source!=='manual',kind=p.kind||'study';
+ if(!p.ref){const first=(kind==='study'?list('subjects'):list('skills')).filter(x=>!x.archivedAt).sort(byName)[0];p.ref=first?.id||''}
+ const opts=sessRefOpts(kind,p.ref,p.refName),noRefs=!opts;
+ openDlg(ed?'Edit session':'Add a past session',`<form class="form" data-form="sess" data-id="${E(p.id||'')}" data-source="${E(p.source||'')}" data-orig="${p.orig||''}" data-kind="${kind}" data-date="${p.date}" data-sw="${p.fromSw?'1':''}" data-refname="${E(p.refName||'')}" data-started="${E(p.startedAt||'')}">
+ ${ed?'':`<label class="f">Type<select name="kind" data-change="sessKind"><option value="study" ${kind==='study'?'selected':''}>Study session</option><option value="skill" ${kind==='skill'?'selected':''}>Skill session</option></select></label>`}
+ ${noRefs?`<div class="banner">Add a ${kind==='study'?'subject':'skill'} first, then record sessions for it.</div>`:`<div class="fgrid"><label class="f">${kind==='study'?'Subject':'Skill'}<select name="ref" data-change="sessRef" required>${opts}</select></label>${kind==='study'?`<label class="f">Chapter<select name="chapter">${chapOpts(p.ref,p.chapter).replace('<option value="__new">＋ New chapter…</option>','')}</select></label>`:''}</div>`}
+ <div class="fgrid"><label class="f">Date<input type="date" name="date" value="${p.date}" max="${today()}" required ${timer?'disabled':''}></label>
+ ${timer?`<div class="f">Times<small>${p.startedAt&&S.sessions.get(p.id)?.timeKnown!==false?'Started '+fmtTime(p.startedAt)+' — recorded by the timer':'Time not recorded'}</small></div>`:`<label class="f">Start time (optional)<input type="time" name="start" value="${p.start}"></label><label class="f">End time (optional)<input type="time" name="end" value="${p.end}"></label>`}</div>
+ <div class="fgrid"><label class="f">Hours<input type="number" name="h" min="0" max="24" inputmode="numeric" value="${p.h}"></label><label class="f">Minutes<input type="number" name="m" min="0" max="59" inputmode="numeric" value="${p.m}"></label></div>
+ <small>${timer?'Edit the active duration if needed.':'If you enter both a start and an end time, the duration is calculated from them. Otherwise enter the duration.'}</small>
+ <label class="f">Title (optional)<input name="title" maxlength="120" value="${E(p.title)}"></label><label class="f">Notes (optional)<textarea name="notes" maxlength="2000">${E(p.notes)}</textarea></label>
+ <div class="df"><button class="btn" type="button" data-act="closeDlg">Cancel</button><button class="btn pri" type="submit" ${noRefs?'disabled':''}>Save session</button></div></form>`)}
+async function saveSess(f){
+ const p=readSess(f),ed=!!p.id,timer=ed&&p.source!=='manual',old=ed?S.sessions.get(p.id):null,kind=p.kind;
+ if(!p.ref)throw new UserErr(`Choose a ${kind==='study'?'subject':'skill'}.`);
+ const date=timer?old.localDate:p.date;if(!isDate(date))throw new UserErr('Enter a valid date.');
+ if(date>today())throw new UserErr('Sessions cannot be recorded for a future date.');
+ const h=clampInt(p.h||0,0,24),m=clampInt(p.m||0,0,59);if(h==null||m==null)throw new UserErr('Enter a valid duration.');
+ let secs=(h*60+m)*60,startedAt,endedAt,timeKnown=false;
+ if(timer){startedAt=old.startedAt;endedAt=old.endedAt;timeKnown=old.timeKnown!==false;if(h*60+m===Math.floor(old.activeSeconds/60))secs=old.activeSeconds}
+ else{
+  if(p.end&&!p.start)throw new UserErr('Enter a start time to go with the end time.');
+  if(p.start){const s=new Date(localISO(date,p.start));
+   if(p.end){const e=new Date(localISO(date,p.end));if(!(e>s))throw new UserErr('The end time must be after the start time (sessions that cross midnight: enter the duration instead).');secs=Math.round((e-s)/1000);endedAt=e.toISOString()}
+   else{if(!secs)throw new UserErr('Enter a duration or an end time.');endedAt=new Date(s.getTime()+secs*1000).toISOString()}
+   if(s>new Date()||new Date(endedAt)>new Date(Date.now()+60000))throw new UserErr('That session would end in the future.');
+   startedAt=s.toISOString();timeKnown=true}
+  else{startedAt=localISO(date,'12:00');endedAt=startedAt}}
+ if(secs<=0)throw new UserErr('The duration must be greater than zero.');
+ if(secs>86400)throw new UserErr('A single session cannot be longer than 24 hours.');
+ const ent=S[kind==='study'?'subjects':'skills'].get(p.ref),refN=ent?.name||p.refName||old?.refName||'';
+ const ch=kind==='study'&&p.chapter?S.chapters.get(p.chapter):null;
+ const rec={id:old?.id||uid(),kind,refId:p.ref,refName:refN,chapterId:ch?ch.id:null,chapterName:ch?ch.name:'',title:p.title.trim(),startedAt,endedAt,activeSeconds:secs,status:'completed',notes:p.notes,source:old?old.source:'manual',localDate:date,timeKnown};
+ if(f.dataset.sw){if(swState().startedAt)throw new UserErr('The stopwatch is running. Stop it first.');await commit([{s:'sessions',op:'put',r:rec},{s:'meta',op:'put',r:{id:'stopwatch',base:0,startedAt:null}}])}   /* saved and reset together, so it can never be saved twice */
+ else await put('sessions',rec);closeDlg();render('data');toast(ed?'Session updated.':`Session saved: ${dur(secs)} on ${fmtDate(date)}.`,'ok')}
+
+/* ---- form handlers ---- */
+const FORMS={
+ async start(f){
+  const kind=f.dataset.kind,fd=new FormData(f),ops=[];let ref=fd.get('ref'),refN,chId=null,chN='';
+  const st=kind==='study'?'subjects':'skills';
+  if(ref==='__new'){const name=String(fd.get('newRef')||'').trim();if(!name)throw new UserErr(`Enter a name for the new ${kind==='study'?'subject':'skill'}.`);
+   const ex=list(st).find(x=>x.name.toLowerCase()===name.toLowerCase()&&!x.archivedAt);
+   if(ex){ref=ex.id;refN=ex.name}else{ref=uid();refN=name;ops.push({s:st,op:'put',r:kind==='study'?{id:ref,name,description:'',color:COLORS[S.subjects.size%COLORS.length],createdAt:nowISO(),archivedAt:null}:{id:ref,name,category:'Other',description:'',currentLevel:'Beginner',targetLevel:'Intermediate',goalMin:null,notes:'',createdAt:nowISO(),archivedAt:null}})}}
+  else refN=S[st].get(ref)?.name;
+  if(!refN)throw new UserErr('Choose a '+(kind==='study'?'subject.':'skill.'));
+  if(kind==='study'){let ch=fd.get('chapter');
+   if(ch==='__new'){const name=String(fd.get('newChap')||'').trim();if(!name)throw new UserErr('Enter a name for the new chapter, or choose another option.');
+    const ex=list('chapters').find(c=>c.subjectId===ref&&c.name.toLowerCase()===name.toLowerCase());
+    if(ex){chId=ex.id;chN=ex.name}else{chId=uid();chN=name;ops.push({s:'chapters',op:'put',r:{id:chId,subjectId:ref,name,description:'',status:'In progress',notes:'',createdAt:nowISO(),completedAt:null}})}}
+   else if(ch){const c=S.chapters.get(ch);if(c){chId=c.id;chN=c.name}}}
+  if(getActive())throw new UserErr('A session is already running. Finish or cancel it first.');
+  if(ops.length)await commit(ops);
+  await startTimer({kind,refId:ref,refName:refN,chapterId:chId,chapterName:chN,title:String(fd.get('title')||'').trim(),notes:String(fd.get('notes')||''),pomo:fd.get('pomo')==='on'});
+  render('data');toast('Session started.','ok')},
+ async finish(f){
+  const rec=await finishTimer(String(new FormData(f).get('notes')||''));
+  closeDlg();render('data');if(rec)toast(`Session saved: ${dur(rec.activeSeconds)}.`,'ok')},
+ async subject(f){
+  const fd=new FormData(f),name=String(fd.get('name')||'').trim(),id=f.dataset.id;if(!name)throw new UserErr('Enter a subject name.');
+  if(list('subjects').some(s=>s.id!==id&&!s.archivedAt&&s.name.toLowerCase()===name.toLowerCase()))throw new UserErr('You already have a subject with that name.');
+  const old=id?S.subjects.get(id):null;
+  await put('subjects',{...(old||{createdAt:nowISO(),archivedAt:null}),id:old?.id||uid(),name,description:String(fd.get('description')||''),color:String(fd.get('color')||COLORS[0])});
+  // keep stored name snapshots on sessions current so history never shows stale names
+  if(old&&old.name!==name){const ops=list('sessions').filter(s=>s.kind==='study'&&s.refId===old.id).map(s=>({s:'sessions',op:'put',r:{...s,refName:name}}));if(ops.length)await commit(ops)}
+  old?showSubject(old.id):closeDlg();render('data');toast('Subject saved.','ok')},
+ async addChap(f){
+  const sid=f.dataset.id,name=String(new FormData(f).get('name')||'').trim();if(!name)return;
+  if(list('chapters').some(c=>c.subjectId===sid&&c.name.toLowerCase()===name.toLowerCase()))throw new UserErr('That chapter already exists.');
+  await put('chapters',{id:uid(),subjectId:sid,name,description:'',status:'Not started',notes:'',createdAt:nowISO(),completedAt:null});showSubject(sid);render('data')},
+ async chapter(f){
+  const c=S.chapters.get(f.dataset.id),fd=new FormData(f),name=String(fd.get('name')||'').trim();if(!name)throw new UserErr('Enter a chapter name.');
+  await put('chapters',{...c,name,description:String(fd.get('description')||''),notes:String(fd.get('notes')||'')});
+  const ops=list('sessions').filter(s=>s.chapterId===c.id).map(s=>({s:'sessions',op:'put',r:{...s,chapterName:name}}));if(ops.length)await commit(ops);
+  showSubject(c.subjectId);render('data')},
+ async subjGoal(f){
+  const id=f.dataset.id,v=String(new FormData(f).get('minutes')||'').trim();
+  if(!v||v==='0'){await del('goals','sg-'+id);toast('Subject goal removed.');}
+  else{const n=clampInt(v,1,10080);if(n==null)throw new UserErr('Enter a valid number of minutes.');await put('goals',{id:'sg-'+id,type:'subjectWeekly',refId:id,minutes:n});toast('Subject goal saved.','ok')}
+  showSubject(id);render('data')},
+ async skill(f){
+  const fd=new FormData(f),name=String(fd.get('name')||'').trim(),id=f.dataset.id;if(!name)throw new UserErr('Enter a skill name.');
+  if(list('skills').some(s=>s.id!==id&&!s.archivedAt&&s.name.toLowerCase()===name.toLowerCase()))throw new UserErr('You already have a skill with that name.');
+  const gm=String(fd.get('goalMin')||'').trim(),old=id?S.skills.get(id):null,goalMin=gm&&gm!=='0'?clampInt(gm,1,10080):null;
+  await put('skills',{...(old||{createdAt:nowISO(),archivedAt:null}),id:old?.id||uid(),name,category:String(fd.get('category')||'').trim(),description:String(fd.get('description')||''),notes:String(fd.get('notes')||''),currentLevel:String(fd.get('currentLevel')),targetLevel:String(fd.get('targetLevel')),goalMin});
+  if(old&&old.name!==name){const ops=list('sessions').filter(s=>s.kind==='skill'&&s.refId===old.id).map(s=>({s:'sessions',op:'put',r:{...s,refName:name}}));if(ops.length)await commit(ops)}
+  old?showSkill(old.id):closeDlg();render('data');toast('Skill saved.','ok')},
+ async quickTask(f){
+  const title=String(new FormData(f).get('title')||'').trim();if(!title)return;
+  await put('tasks',{id:uid(),title,description:'',localDate:f.dataset.d,category:'',priority:'Normal',plannedMin:null,actualMin:null,completed:false,completedAt:null,createdAt:nowISO()});render('data')},
+ async task(f){
+  const fd=new FormData(f),title=String(fd.get('title')||'').trim(),date=String(fd.get('date')||'');if(!title)throw new UserErr('Enter a task title.');if(!isDate(date))throw new UserErr('Enter a valid date.');
+  const num=k=>{const v=String(fd.get(k)||'').trim();return v===''?null:clampInt(v,0,1440)},old=f.dataset.id?S.tasks.get(f.dataset.id):null;
+  await put('tasks',{...(old||{completed:false,completedAt:null,createdAt:nowISO()}),id:old?.id||uid(),title,description:String(fd.get('description')||''),localDate:date,category:String(fd.get('category')||'').trim(),priority:String(fd.get('priority')),plannedMin:num('plannedMin'),actualMin:num('actualMin')});
+  closeDlg();render('data');toast('Task saved.','ok')},
+ async habit(f){
+  const fd=new FormData(f),name=String(fd.get('name')||'').trim(),start=String(fd.get('start')||'');if(!name)throw new UserErr('Enter a habit name.');if(!isDate(start))throw new UserErr('Enter a valid start date.');
+  await put('habits',{id:uid(),name,createdDate:start,archivedAt:null});closeDlg();render('data')},
+ async note(f){
+  const d=f.dataset.d,content=String(new FormData(f).get('content')||'');
+  await put('notes',{id:'note-'+d,localDate:d,content,updatedAt:nowISO()});render('data');toast('Reflection saved.','ok')},
+ async onbGoal(f){
+  const n=Number(String(new FormData(f).get('min')||'').trim());if(!Number.isInteger(n)||n<1||n>1440)throw new UserErr('Enter a whole number of minutes between 1 and 1440.');
+  await saveCfg({dailyGoalMin:n});render('data');toast('Daily goal saved.','ok')},
+ async settings(f){
+  const fd=new FormData(f),g=(k,mx)=>{const v=String(fd.get(k)||'').trim();if(v===''||v==='0')return null;const n=Number(v);if(!Number.isFinite(n)||n<1||n>mx)throw new UserErr(`Goals must be between 1 and ${mx} minutes (leave empty for no goal).`);return Math.round(n)};
+  const pw=clampInt(fd.get('pomoWork'),1,180),pb=clampInt(fd.get('pomoBreak'),1,60);if(pw==null||pb==null)throw new UserErr('Pomodoro lengths must be whole minutes.');
+  await saveCfg({displayName:String(fd.get('displayName')||'').trim().slice(0,40),dailyGoalMin:g('dailyGoalMin',1440),weeklyGoalMin:g('weeklyGoalMin',10080),skillDailyGoalMin:g('skillDailyGoalMin',1440),timerFormat:fd.get('timerFormat')==='compact'?'compact':'hms',pomoWork:pw,pomoBreak:pb});
+  render('data');toast('Settings saved.','ok')},
+ async range(f){
+  const fd=new FormData(f),a=String(fd.get('from')),b=String(fd.get('to'));if(!isDate(a)||!isDate(b))throw new UserErr('Enter valid dates.');
+  AN.from=a;AN.to=b;render('data')}};
+/* Sandboxed previews (no allow-forms / hash links resolved against the parent page) break native submit and #links; handle both in script. */
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('button[type=submit]');const f=b&&b.form;if(!f||!f.matches('form[data-form]')||e.defaultPrevented)return;e.preventDefault();if(f.dataset.busy)return;if(f.reportValidity())f.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}))});
+document.addEventListener('click',e=>{if(e.defaultPrevented||e.button||e.ctrlKey||e.metaKey||e.shiftKey)return;const a=e.target.closest&&e.target.closest('a[href^="#/"]');if(!a)return;e.preventDefault();const h=a.getAttribute('href');if(location.hash===h)render('nav');else location.hash=h});
+document.addEventListener('submit',e=>{const f=e.target.closest('form[data-form]');if(!f)return;e.preventDefault();
+ const h=FORMS[f.dataset.form]||(f.dataset.form==='sess'?saveSess:null);if(!h)return;
+ if(f.dataset.busy)return;          /* double tap / Enter twice: ignore the repeat */
+ f.dataset.busy='1';const btns=$$('button[type=submit]',f);btns.forEach(b=>b.disabled=true);
+ run(()=>h(f)).finally(()=>{delete f.dataset.busy;btns.forEach(b=>{b.disabled=false})})});
+
+/* ---- change handlers ---- */
+const CH={
+ sessKind(el){showSessForm({...readSess(el.form),ref:'',chapter:''})},
+ sessRef(el){showSessForm({...readSess(el.form),chapter:''})},
+ async chapStatus(el){const c=S.chapters.get(el.dataset.id);if(!c)return;await put('chapters',{...c,status:el.value,completedAt:el.value==='Completed'?nowISO():null});showSubject(c.subjectId);render('data')}};
+document.addEventListener('change',e=>{
+ const el=e.target;
+ if(el.id==='datePick'){if(isDate(el.value))setDate(el.value);return}
+ if(el.id==='importFile'){const file=el.files[0];el.value='';if(file)run(async()=>{
+  if(file.size>25*1024*1024)throw new UserErr('That file is too large to be a Vistraker backup.');
+  pendingImport=validateBackup(await file.text());const c=pendingImport.counts,tot=Object.values(c).reduce((a,b)=>a+b,0),warn=orphanWarning(pendingImport.data);
+  openDlg('Restore backup',`<form class="form" data-form="importGo">${warn?`<div class="banner">${warn}</div>`:''}<p class="sm-t">Backup file checked and valid${pendingImport.exportedAt?' · exported '+E(new Date(pendingImport.exportedAt).toLocaleString()):''}. It contains ${tot} record${tot===1?'':'s'}: ${DATA_STORES.map(n=>c[n]?`${c[n]} ${n}`:'').filter(Boolean).join(', ')||'none'}.</p>
+  <label class="row" style="align-items:flex-start"><input type="radio" name="mode" value="merge" checked><span><b>Merge</b><br><small>Adds records that are not already here (matched by ID). Your existing records and settings are kept unchanged.</small></span></label>
+  <label class="row" style="align-items:flex-start"><input type="radio" name="mode" value="replace"><span><b>Replace</b><br><small>Erases everything currently stored here, including any running timer, and uses the backup instead.</small></span></label>
+  <label class="row" id="repOk" hidden><input type="checkbox" name="ok"><span class="sm-t">I understand my current data will be erased. I have exported a backup if I need one.</span></label>
+  <div class="df"><button class="btn" type="button" data-act="closeDlg">Cancel</button><button class="btn pri" type="submit">Import</button></div></form>`)});return}
+ if(el.name==='mode'&&el.closest('[data-form=importGo]')){$('#repOk').hidden=el.value!=='replace';return}
+ const f=el.closest('form[data-form=start]');
+ if(f&&el.name==='ref'){const nw=el.value==='__new';$('[data-new=ref]',f).hidden=!nw;if(f.dataset.kind==='study'){f.chapter.innerHTML=chapOpts(nw?'':el.value);$('[data-new=chapter]',f).hidden=true}return}
+ if(f&&el.name==='chapter'){$('[data-new=chapter]',f).hidden=el.value!=='__new';return}
+ if(el.dataset.change)run(()=>CH[el.dataset.change](el))});
+FORMS.importGo=async f=>{const fd=new FormData(f),mode=fd.get('mode');if(!pendingImport)throw new UserErr('Choose a backup file again.');if(mode==='replace'&&fd.get('ok')!=='on')throw new UserErr('Tick the box to confirm that your current data will be erased.');await applyImport(mode)};
+
+/* ---- click actions ---- */
+const A={
+ closeDlg:()=>closeDlg(),
+ cfmNo:()=>closeDlg(cfm),
+ cfmYes:()=>{const r=cfm._res;cfm._res=null;closeDlg(cfm);r&&r(true)},
+ moreMenu:()=>openDlg('All sections',`<nav class="mlist" aria-label="All sections"><a href="#/history" data-act="closeDlg">${ic('calendar')}<span><span class="t">History</span><small>Look back at any day or month</small></span></a><a href="#/analytics" data-act="closeDlg">${ic('chart')}<span><span class="t">Analytics</span><small>Charts and totals for a period</small></span></a><a href="#/stopwatch" data-act="closeDlg">${ic('clock')}<span><span class="t">Stopwatch</span><small>A simple timer, separate from your records</small></span></a><a href="#/settings" data-act="closeDlg">${ic('sliders')}<span><span class="t">Settings</span><small>Goals, backup, restore and privacy</small></span></a></nav><p class="sm-t" style="padding-top:14px">Build 30 Oct 2026 · dark menu 5</p>`),
+ pause:()=>pauseTimer().then(()=>render('data')),
+ takeBreak:()=>startBreak().then(()=>{render('data');toast(`Break started: ${cfg().pomoBreak} minutes. Break time is not counted.`)}),
+ resume:()=>resumeTimer().then(()=>render('data')),
+ finish:()=>{const a=getActive();if(!a)return;openDlg('Finish session',`<form class="form" data-form="finish"><p>Active time so far: <b class="num">${dur(activeSecs(a))}</b></p><label class="f">Session notes (optional)<textarea name="notes" maxlength="2000">${E(a.notes)}</textarea></label><div class="df"><button class="btn" type="button" data-act="closeDlg">Keep going</button><button class="btn ok" type="submit">${ic('check')}Save session</button></div></form>`)},
+ async cancel(){if(await confirmDlg({title:'Cancel this session?',body:'The timer will be discarded and nothing will be saved or counted in your totals.',ok:'Discard session'})){await cancelTimer();render('data');toast('Session discarded.')}},
+ tip:el=>{const c=el.closest('.chart');$$('.cb',c).forEach(b=>{b.classList.toggle('sel',b===el);b.setAttribute('aria-pressed',String(b===el))});$('.readout',c).textContent=el.dataset.tip},
+ chartDay:el=>{go('history',el.dataset.d)},
+ dprev:()=>setDate(addDays(selDate,-1)),dnext:()=>setDate(addDays(selDate,1)),dtoday:()=>setDate(today()),
+ dgo:el=>el.dataset.d&&setDate(el.dataset.d),
+ pickDate:el=>setDate(el.dataset.d),
+ calNav:el=>{const b=parseD(calMonth||monthStart(selDate));b.setMonth(b.getMonth()+Number(el.dataset.n));calMonth=dstr(b);render('data')},
+ toggleArch:el=>{showArchived[el.dataset.k]=!showArchived[el.dataset.k];render('data')},
+ period:el=>{AN.period=el.dataset.k;render('data')},trend:el=>{AN.trend=el.dataset.k;render('data')},
+ newSubject:()=>showSubjectForm(),subjDetail:el=>showSubject(el.dataset.id),editSubject:el=>showSubjectForm(el.dataset.id),
+ async archiveSubject(el){const s=S.subjects.get(el.dataset.id);await put('subjects',{...s,archivedAt:s.archivedAt?null:nowISO()});showSubject(s.id);render('data')},
+ async deleteSubject(el){
+  const id=el.dataset.id,s=S.subjects.get(id),chs=list('chapters').filter(c=>c.subjectId===id),n=(totalsBy('study').get(id)||{n:0}).n;
+  if(!await confirmDlg({title:`Delete “${s.name}”?`,body:`This deletes the subject and its ${chs.length} chapter${chs.length===1?'':'s'}.\n\nIts ${n} saved session${n===1?'':'s'} will NOT be deleted: they stay in History and Analytics, labelled “${s.name} (deleted)”.\n\nTo hide the subject but keep it fully intact, choose Archive instead.`,ok:'Delete subject'}))return;
+  await commit([{s:'subjects',op:'delete',id},{s:'goals',op:'delete',id:'sg-'+id},...chs.map(c=>({s:'chapters',op:'delete',id:c.id}))]);closeDlg();render('data');toast('Subject deleted. Its sessions were kept.')},
+ editChapter:el=>showChapterForm(el.dataset.id),
+ async delChapter(el){const c=S.chapters.get(el.dataset.id),n=(chapTotals().get(c.id)||{n:0}).n;
+  if(!await confirmDlg({title:`Delete chapter “${c.name}”?`,body:`${n} saved session${n===1?'':'s'} reference this chapter. They are kept and will still count toward the subject.`,ok:'Delete chapter'}))return;
+  await del('chapters',c.id);showSubject(c.subjectId);render('data')},
+ newSkill:el=>showSkillForm(null,el.dataset.name||''),skillDetail:el=>showSkill(el.dataset.id),editSkill:el=>showSkillForm(el.dataset.id),
+ async archiveSkill(el){const s=S.skills.get(el.dataset.id);await put('skills',{...s,archivedAt:s.archivedAt?null:nowISO()});showSkill(s.id);render('data')},
+ async deleteSkill(el){const id=el.dataset.id,s=S.skills.get(id),n=(totalsBy('skill').get(id)||{n:0}).n;
+  if(!await confirmDlg({title:`Delete “${s.name}”?`,body:`The skill will be deleted. Its ${n} saved session${n===1?'':'s'} will NOT be deleted: they stay in History and Analytics, labelled “${s.name} (deleted)”.\n\nTo keep the skill but hide it, choose Archive instead.`,ok:'Delete skill'}))return;
+  await del('skills',id);closeDlg();render('data');toast('Skill deleted. Its sessions were kept.')},
+ addSess:el=>{const d=el.dataset.d||selDate,k=el.dataset.kind||'study';showSessForm({kind:k,date:d>today()?today():d,ref:'',chapter:'',start:'',end:'',h:'',m:'',title:'',notes:''})},
+ editSess:el=>{const s=S.sessions.get(el.dataset.id);if(!s)return;const m=Math.floor(s.activeSeconds/60);
+  showSessForm({id:s.id,kind:s.kind,source:s.source,orig:s.activeSeconds,date:s.localDate,ref:s.refId,refName:s.refName,chapter:s.chapterId||'',startedAt:s.startedAt,start:s.source==='manual'&&s.timeKnown!==false?hhmm(s.startedAt):'',end:s.source==='manual'&&s.timeKnown!==false?hhmm(s.endedAt):'',h:Math.floor(m/60),m:m%60,title:s.title,notes:s.notes})},
+ async delSess(el){const s=S.sessions.get(el.dataset.id);if(!await confirmDlg({title:'Delete this session?',body:`“${s.title||refName(s)}” (${dur(s.activeSeconds)} on ${fmtDate(s.localDate)}) will be removed from your totals and history.`,ok:'Delete session'}))return;await del('sessions',s.id);render('data');toast('Session deleted.')},
+ async tickSubject(el){const s=S.subjects.get(el.dataset.id);if(!s)return;const t=today();
+  if((ix().sess.get(t)||[]).some(x=>x.kind==='study'&&x.refId===s.id&&x.activeSeconds>0))throw new UserErr('Already counted: you have a timed session for this subject today.');
+  const tk=studyTick(s,t);
+  if(tk)await del('tasks',tk.id);
+  else await put('tasks',{id:uid(),tick:true,subjectId:s.id,title:studyTaskTitle(s),description:'',localDate:t,category:'Study',priority:'Normal',plannedMin:null,actualMin:null,completed:true,completedAt:nowISO(),createdAt:nowISO()});
+  render('data')},
+ async swStart(){const s=swState();if(s.startedAt)return;await put('meta',{id:'stopwatch',base:s.base,startedAt:Date.now()});render('data')},
+ async swStop(){const s=swState();if(!s.startedAt)return;await put('meta',{id:'stopwatch',base:swMs(s),startedAt:null});render('data')},
+ async swSave(){const s=swState();if(s.startedAt)throw new UserErr('Stop the stopwatch first.');const mins=Math.round(swMs(s)/60000);
+  if(mins<1)throw new UserErr('The stopwatch is under a minute, which is too short to save as a session.');if(mins>1440)throw new UserErr('A session cannot be longer than 24 hours. Reset the stopwatch and time a shorter block.');
+  showSessForm({kind:'study',date:today(),ref:'',chapter:'',start:'',end:'',h:Math.floor(mins/60),m:mins%60,title:'',notes:'',fromSw:true})},
+ async swReset(){await put('meta',{id:'stopwatch',base:0,startedAt:null});render('data')},
+ async toggleTask(el){const t=S.tasks.get(el.dataset.id);await put('tasks',{...t,completed:!t.completed,completedAt:t.completed?null:nowISO()});render('data')},
+ newTask:el=>showTaskForm(null,el.dataset.d),newGoal:el=>showTaskForm(null,el.dataset.d,'Goal'),editTask:el=>showTaskForm(el.dataset.id),
+ async delTask(el){const t=S.tasks.get(el.dataset.id);if(!await confirmDlg({title:'Delete this task?',body:`“${t.title}” will be removed from ${fmtDate(t.localDate)}.`,ok:'Delete task'}))return;await del('tasks',t.id);render('data')},
+ newHabit:()=>showHabitForm(),
+ async toggleHabit(el){const id=el.dataset.id+'|'+el.dataset.d;if(S.habitLogs.has(id))await del('habitLogs',id);else await put('habitLogs',{id,habitId:el.dataset.id,localDate:el.dataset.d});render('data')},
+ async delHabit(el){const h=S.habits.get(el.dataset.id);if(!await confirmDlg({title:`Archive “${h.name}”?`,body:'The habit stops appearing on new dates. Dates where you already completed it keep their records.',ok:'Archive habit',danger:false}))return;await put('habits',{...h,archivedAt:nowISO()});render('data')},
+ exportJson:()=>{download(`vistraker-backup-${today()}.json`,JSON.stringify(backupObj(),null,2),'application/json');toast('Backup downloaded. Keep it somewhere safe.','ok');put('meta',{id:'backup',lastAt:nowISO(),snoozeUntil:0}).catch(()=>{})},
+ onbSkip:async()=>{await put('meta',{id:'onboarding',skipped:true,at:nowISO()});render('data')},
+ backupLater:async()=>{const b=S.meta.get('backup')||{id:'backup'};await put('meta',{...b,id:'backup',snoozeUntil:Date.now()+3*864e5});render('data')},
+ exportAllCsv:()=>{const a=ix().sorted;download(`vistraker-all-${today()}.csv`,'﻿'+csvRows(a[0]||today(),a.length&&a[a.length-1]>today()?a[a.length-1]:today()),'text/csv');toast('CSV downloaded.','ok')},
+ exportRangeCsv:()=>{const[f,t]=periodRange();if(f>t)throw new UserErr('Fix the date range first.');download(`vistraker-${f}_to_${t}.csv`,'﻿'+csvRows(f,t),'text/csv');toast('CSV downloaded.','ok')},
+ importPick:()=>$('#importFile').click(),
+ clearAll:()=>openDlg('Clear all data',`<form class="form" data-form="clear"><div class="banner err" style="margin:0">This permanently deletes every subject, chapter, session, skill, task, habit, note, goal and setting stored on this device, and any running timer. It cannot be undone.</div><p class="sm-t">Recommended: download a backup first.</p><button class="btn" type="button" data-act="exportJson">${ic('download')}Download backup first</button><label class="f">Type DELETE to confirm<input name="confirm" autocomplete="off" autocapitalize="characters"></label><div class="df"><button class="btn" type="button" data-act="closeDlg">Cancel</button><button class="btn danger" type="submit">Delete everything</button></div></form>`)};
+FORMS.clear=async f=>{if(String(new FormData(f).get('confirm')).trim()!=='DELETE')throw new UserErr('Type DELETE (in capitals) to confirm.');await commit(ALL_STORES.map(s=>({s,op:'clear'})));closeDlg();render('data');toast('All data cleared.')};
+function go(name,date){location.hash='#/'+name+(date?'/'+date:'')}
+document.addEventListener('click',e=>{const el=e.target.closest('[data-act]');if(!el||el.disabled)return;const f=A[el.dataset.act];if(f)run(()=>f(el,e))});
+
+/* ---- swipe & keyboard date navigation (never blocks vertical scrolling: passive listeners, no preventDefault) ---- */
+let sw=null;
+document.addEventListener('touchstart',e=>{const el=e.target.closest&&e.target.closest('#swipe');if(!el||e.touches.length!==1||e.target.closest('input,textarea,select,.heat,.chart,.cb')){sw=null;return}sw={x:e.touches[0].clientX,y:e.touches[0].clientY,t:Date.now()}},{passive:true});
+document.addEventListener('touchend',e=>{if(!sw)return;const t=e.changedTouches[0],dx=t.clientX-sw.x,dy=t.clientY-sw.y,s=sw;sw=null;
+ if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6&&Date.now()-s.t<800)setDate(addDays(selDate,dx>0?-1:1))},{passive:true});
+document.addEventListener('keydown',e=>{
+ if((route!=='history'&&route!=='daily')||dlg.open||cfm.open||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;
+ if(/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)||e.target.isContentEditable)return;
+ if(e.key==='ArrowLeft'){setDate(addDays(selDate,-1))}else if(e.key==='ArrowRight'){setDate(addDays(selDate,1))}});
+
+/* ---- boot ---- */
+(async function boot(){
+ try{db=await openDB();await loadAll()}
+ catch(e){console.warn('Persistent storage unavailable',e);db=null;storageOK=false;$('#sbanner').hidden=false}
+ const a=getActive();if(a&&a.pomo)pomoSeen.set(a.sessionId,Math.floor(activeSecs(a)/(cfg().pomoWork*60)));
+ window.addEventListener('hashchange',()=>{closeDlg(cfm);closeDlg(dlg);render('nav')});
+ if(db){db.onversionchange=()=>{db.close();db=null;storageOK=false;const b=$('#sbanner');b.textContent='Vistraker was updated in another tab. Reload this page before making changes; nothing from this tab will be saved until you do.';b.hidden=false};db.onclose=()=>{db=null;storageOK=false;const b=$('#sbanner');b.textContent='The browser closed the database. Reload this page; changes made now will not be saved.';b.hidden=false}}
+ if(bc)bc.onmessage=()=>{if(db)run(async()=>{await loadAll();dirty++;render('data')})};
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden){tick();run(syncFromDB)}});
+ /* Offline/installable: only when served over https (or localhost) AND sw.js sits next to index.html; otherwise the app just runs as a normal page. */
+ try{if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch{}
+ setInterval(tick,250);
+ render('nav');tick()})();
+
+})();
+</script>
+</body>
+</html>
