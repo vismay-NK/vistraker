@@ -7,8 +7,18 @@
 <meta name="theme-color" content="#101116">
 <meta name="color-scheme" content="dark">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="description" content="Vistraker - Track Your Time. See Your Growth. A private, local-first study, skills and progress tracker.">
-<title>Vistraker - Track Your Time. See Your Growth.</title>
+<meta name="description" content="Vistraker is a free, private study time tracker by Vismay NK. Time your study sessions, track subjects, skills, habits and daily goals, and see your progress. No sign-up, works offline, your data stays on your device.">
+<meta name="keywords" content="Vistraker, study tracker, study time tracker, study timer, Pomodoro timer, skill tracker, habit tracker, Vismay NK">
+<meta name="author" content="Vismay NK">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://vismay-nk.github.io/vistraker/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Vistraker - Free Study Time Tracker by Vismay NK">
+<meta property="og:description" content="Track study time, skills, habits and goals. Private, no sign-up, works offline.">
+<meta property="og:url" content="https://vismay-nk.github.io/vistraker/">
+<meta name="twitter:card" content="summary">
+<title>Vistraker - Free Study Time Tracker by Vismay NK</title>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Vistraker","alternateName":"Vistraker study tracker","url":"https://vismay-nk.github.io/vistraker/","description":"A free, private study time tracker for subjects, skills, habits and daily goals. Works offline; data stays on your device.","applicationCategory":"EducationalApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Vismay NK","url":"https://github.com/vismay-NK","sameAs":["https://github.com/vismay-NK"]}}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%238B5CF6'/%3E%3Cpath d='M8 21.5l5-5.5 3.5 3L24 10.5' fill='none' stroke='%23fff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='24' cy='10.5' r='2.2' fill='%23fff'/%3E%3C/svg%3E">
 <style>
 /* Vistraker — one consolidated stylesheet. Calm, solid, dark charcoal; violet only for actions, selection and progress.
@@ -369,6 +379,7 @@ input:focus-visible+[data-sw]{outline:2px solid var(--tx);outline-offset:6px}
 </svg>
 
 <a class="sr" href="#view" onclick="document.getElementById('view').focus();return false">Skip to content</a>
+<noscript><main style="padding:24px;max-width:640px;margin:auto"><h1>Vistraker</h1><p>Vistraker is a free, private study time tracker by Vismay NK. Time your study sessions, organise subjects and chapters, track skills, habits and daily goals, and review your progress. It needs JavaScript, works offline and keeps your data on your device.</p></main></noscript>
 <div class="shell">
  <aside class="side" aria-label="Sidebar">
   <a class="logo" href="#/dashboard"><svg width="30" height="30" aria-hidden="true"><use href="#i-logo"/></svg>Vistraker</a>
@@ -935,7 +946,7 @@ function render(mode='nav'){
  if(mode==='nav'){$$('.rise',v).forEach((el,i)=>el.style.setProperty('--i',Math.min(i,9)));if(lastRoute!==route||!lastRoute)window.scrollTo(0,0);requestAnimationFrame(()=>requestAnimationFrame(()=>{v.classList.add('in');runCounters()}))}
  else{v.classList.add('in');if(mode==='data')window.scrollTo(0,keepY)}
  lastRoute=route;
- $('#pagetitle').textContent=TITLES[route]; if(!getActive())document.title=TITLES[route]+' · Vistraker';
+ $('#pagetitle').textContent=TITLES[route]; if(!getActive())document.title=route==='dashboard'?'Vistraker - Free Study Time Tracker by Vismay NK':TITLES[route]+' · Vistraker';
  if(snap)restoreUI(snap);
  if(mode==='nav')$('#announce').textContent=TITLES[route]+' page'}
 function runCounters(){
